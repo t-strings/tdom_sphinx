@@ -1,0 +1,18 @@
+"""Integration test for basic Sphinx theme functionality."""
+
+import pytest
+from bs4 import BeautifulSoup
+
+pytestmark = pytest.mark.sphinx("html", testroot="basic-sphinx")
+
+
+@pytest.mark.parametrize(
+    "page",
+    [
+        "index.html",
+    ],
+    indirect=True,
+)
+def test_index(page: str, soup: BeautifulSoup) -> None:
+    """Ensure basics are in the page."""
+    assert soup.title.text == "Hello PicoCSS"
