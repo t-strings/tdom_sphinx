@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Any
 
-from tdom import Element
+from markupsafe import Markup
+from tdom import Element, html
+
 from tdom_sphinx.layouts import BaseLayout
 from tdom_sphinx.models import TdomContext
 
@@ -16,5 +17,11 @@ class DefaultView:
     context: TdomContext
 
     def __call__(self) -> Element:
-        layout = BaseLayout(context=self.context)
-        return layout()
+        page_context = self.context.page_context
+        children = Markup(page_context.get("body", "<p>No content</p>"))
+        result = html(t"""\
+<{BaseLayout} context={self.context}>
+{children}
+</{BaseLayout}>
+""")
+        return result

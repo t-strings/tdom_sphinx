@@ -25,12 +25,12 @@ class BaseLayout:
     """
 
     context: TdomContext
-    children: Optional[Iterable[Element | str]] = None
 
     def __call__(self) -> Element:
         page_context = self.context.page_context
         title = page_context.get("title") or DEFAULT_TITLE
         body_html = Markup(page_context.get("body", "<p>No content</p>"))
+        pathto = page_context.get("pathto")
 
         # Full HTML5 structure with PicoCSS and favicon links expected by tests
         return html(
@@ -39,8 +39,9 @@ class BaseLayout:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
-  <link rel="stylesheet" href="_static/pico.min.css" />
-  <link rel="icon" href="_static/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="{pathto("_static/pico.css", 1)}" />
+  <link rel="stylesheet" href="{pathto("_static/sphinx.css", 1)}" />
+  <link rel="icon" href="{pathto("_static/favicon.ico", 1)}" type="image/x-icon" />
 </head>
 <body>
   <main class="container">

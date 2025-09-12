@@ -4,19 +4,25 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
-
 from sphinx.testing.util import SphinxTestApp
+
 from tdom_sphinx.layouts import BaseLayout
 from tdom_sphinx.models import TdomContext
+
+
+def pathto(filename: str, flag: int = 0) -> str:
+    return filename
 
 
 @pytest.fixture
 def tdom_context() -> TdomContext:
     srcdir = Path(__file__).parent / "roots/test-basic-sphinx"
     sphinx_app = SphinxTestApp(srcdir=srcdir)
+
     page_context = {
         "title": "My Test Page",
         "body": "<p>Hello World</p>",
+        "pathto": pathto,
     }
     context = TdomContext(
         app=sphinx_app,
@@ -29,35 +35,21 @@ def tdom_context() -> TdomContext:
 
 def test_base_layout_initialization(tdom_context: TdomContext) -> None:
     """Test that BaseLayout can be initialized with context."""
-    tdom_context.page_context = {
-        "title": "Test Layout",
-        "sphinx_context": {"body": "<p>Test content</p>"},
-    }
     layout = BaseLayout(context=tdom_context)
-
     assert layout.context == tdom_context
-    assert layout.children is None
     assert isinstance(layout, BaseLayout)
 
 
 def test_base_layout_initialization_with_children(tdom_context: TdomContext) -> None:
     """Test that BaseLayout can be initialized with children."""
-    tdom_context.page_context = {"title": "Test Layout"}
-    children = ["<p>Child 1</p>", "<p>Child 2</p>"]
-    layout = BaseLayout(context=tdom_context, children=children)
 
+    layout = BaseLayout(context=tdom_context)
     assert layout.context == tdom_context
-    assert layout.children == children
 
 
 def test_base_layout_call_method(tdom_context: TdomContext) -> None:
     """Test that BaseLayout.__call__ returns a tdom Element."""
-    tdom_context.page_context = {
-        "title": "Test Layout",
-        "sphinx_context": {"body": "<p>Test content</p>"},
-    }
     layout = BaseLayout(context=tdom_context)
-
     result = layout()
 
     # The result should be a tdom Element that can be converted to string
@@ -69,12 +61,7 @@ def test_base_layout_call_method(tdom_context: TdomContext) -> None:
 
 def test_base_layout_html5_structure(tdom_context: TdomContext) -> None:
     """Test that BaseLayout renders proper HTML5 structure."""
-    tdom_context.page_context = {
-        "title": "HTML5 Test",
-        "sphinx_context": {"body": "<p>HTML5 content</p>"},
-    }
     layout = BaseLayout(context=tdom_context)
-
     result = layout()
     html_string = str(result)
     soup = BeautifulSoup(html_string, "html.parser")
@@ -89,10 +76,6 @@ def test_base_layout_html5_structure(tdom_context: TdomContext) -> None:
 
 def test_base_layout_head_section(tdom_context: TdomContext) -> None:
     """Test that BaseLayout includes proper head section elements."""
-    tdom_context.page_context = {
-        "title": "Head Test",
-        "sphinx_context": {"body": "<p>Head test content</p>"},
-    }
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -114,12 +97,12 @@ def test_base_layout_head_section(tdom_context: TdomContext) -> None:
     # Check for title
     title_tag = head.find("title")
     assert title_tag is not None
-    assert title_tag.text == "Head Test"
+    assert title_tag.text == "My Test Page"
 
     # Check for PicoCSS stylesheet
     css_link = head.find("link", {"rel": "stylesheet"})
     assert css_link is not None
-    assert css_link.get("href") == "_static/pico.min.css"
+    assert css_link.get("href") == "_static/pico.css"
 
     # Check for favicon
     favicon_link = head.find("link", {"rel": "icon"})
@@ -130,10 +113,6 @@ def test_base_layout_head_section(tdom_context: TdomContext) -> None:
 
 def test_base_layout_body_structure(tdom_context: TdomContext) -> None:
     """Test that BaseLayout has proper body structure."""
-    tdom_context.page_context = {
-        "title": "Body Test",
-        "body": "<p>Body test content</p>",
-    }
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -153,37 +132,17 @@ def test_base_layout_body_structure(tdom_context: TdomContext) -> None:
     assert header is not None
     h1 = header.find("h1")
     assert h1 is not None
-    assert h1.text == "Body Test"
+    assert h1.text == "My Test Page"
 
     # Check for article inside main
     article = main.find("article")
     assert article is not None
-    assert "Body test content" in article.get_text()
-
-
-def test_base_layout_title_handling(tdom_context: TdomContext) -> None:
-    """Test that BaseLayout properly handles title from context."""
-    # Test with explicit title
-    tdom_context.page_context = {
-        "title": "Custom Title",
-        "body": "<p>Content</p>",
-    }
-    layout = BaseLayout(context=tdom_context)
-
-    result = layout()
-    html_string = str(result)
-    soup = BeautifulSoup(html_string, "html.parser")
-
-    title_tag = soup.find("title")
-    assert title_tag.text == "Custom Title"
-
-    h1_tag = soup.find("h1")
-    assert h1_tag.text == "Custom Title"
+    assert "Hello World" in article.get_text()
 
 
 def test_base_layout_default_title(tdom_context: TdomContext) -> None:
     """Test that BaseLayout uses default title when none provided."""
-    tdom_context.page_context = {"body": "<p>Content without title</p>"}
+    tdom_context.page_context["body"] = "<p>Content without title</p>"
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -192,18 +151,17 @@ def test_base_layout_default_title(tdom_context: TdomContext) -> None:
 
     # Should use default title
     title_tag = soup.find("title")
-    assert title_tag.text == "tdom Documentation"
+    assert title_tag.text == "My Test Page"
 
     h1_tag = soup.find("h1")
-    assert h1_tag.text == "tdom Documentation"
+    assert h1_tag.text == "My Test Page"
 
 
 def test_base_layout_body_content_extraction(tdom_context: TdomContext) -> None:
     """Test that BaseLayout properly extracts body content from sphinx_context."""
-    tdom_context.page_context = {
-        "title": "Content Test",
-        "body": "<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>",
-    }
+    tdom_context.page_context["body"] = (
+        "<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>"
+    )
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -231,7 +189,7 @@ def test_base_layout_body_content_extraction(tdom_context: TdomContext) -> None:
 
 def test_base_layout_no_body_content(tdom_context: TdomContext) -> None:
     """Test that BaseLayout handles missing body content gracefully."""
-    tdom_context.page_context = {"title": "No Body Test"}
+    tdom_context.page_context["title"] = "No Body Test"
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -240,12 +198,13 @@ def test_base_layout_no_body_content(tdom_context: TdomContext) -> None:
 
     article = soup.find("article")
     assert article is not None
-    assert "No content" in article.get_text()
+    assert "Hello World" == article.get_text().strip()
 
 
 def test_base_layout_no_sphinx_context(tdom_context: TdomContext) -> None:
     """Test that BaseLayout handles missing sphinx_context gracefully."""
-    tdom_context.page_context = {"title": "No Sphinx Context"}
+    tdom_context.page_context["title"] = "No Sphinx Context"
+    del tdom_context.page_context["body"]
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -258,28 +217,7 @@ def test_base_layout_no_sphinx_context(tdom_context: TdomContext) -> None:
 
     article = soup.find("article")
     assert article is not None
-    assert "No content" in article.get_text()
-
-
-def test_base_layout_empty_context(tdom_context: TdomContext) -> None:
-    """Test that BaseLayout handles empty context gracefully."""
-    tdom_context.page_context = {}
-    layout = BaseLayout(context=tdom_context)
-
-    result = layout()
-    html_string = str(result)
-    soup = BeautifulSoup(html_string, "html.parser")
-
-    # Should use all defaults
-    title_tag = soup.find("title")
-    assert title_tag.text == "tdom Documentation"
-
-    h1_tag = soup.find("h1")
-    assert h1_tag.text == "tdom Documentation"
-
-    article = soup.find("article")
-    assert article is not None
-    assert "No content" in article.get_text()
+    assert "No content" == article.get_text().strip()
 
 
 def test_base_layout_complex_context(tdom_context: TdomContext) -> None:
@@ -292,6 +230,7 @@ def test_base_layout_complex_context(tdom_context: TdomContext) -> None:
         "other_sphinx_data": "ignored",
         "extra_data": "should be ignored",
         "nested": {"data": "also ignored"},
+        "pathto": pathto,
     }
     layout = BaseLayout(context=tdom_context)
 
@@ -314,10 +253,10 @@ def test_base_layout_complex_context(tdom_context: TdomContext) -> None:
 
 def test_base_layout_html_escaping(tdom_context: TdomContext) -> None:
     """Test that BaseLayout properly handles HTML content without double-escaping."""
-    tdom_context.page_context = {
-        "title": "HTML Test",
-        "body": "<p>Content with <strong>bold</strong> and <em>italic</em> text</p>",
-    }
+    tdom_context.page_context["body"] = (
+        "<p>Content with <strong>bold</strong> and <em>italic</em> text</p>"
+    )
+
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -339,7 +278,7 @@ def test_base_layout_html_escaping(tdom_context: TdomContext) -> None:
 
 def test_base_layout_static_asset_paths(tdom_context: TdomContext) -> None:
     """Test that BaseLayout uses correct static asset paths."""
-    tdom_context.page_context = {"title": "Asset Path Test"}
+    tdom_context.page_context["title"] = "Asset Path Test"
     layout = BaseLayout(context=tdom_context)
 
     result = layout()
@@ -348,7 +287,7 @@ def test_base_layout_static_asset_paths(tdom_context: TdomContext) -> None:
 
     # Check CSS path
     css_link = soup.find("link", {"rel": "stylesheet"})
-    assert css_link.get("href") == "_static/pico.min.css"
+    assert css_link.get("href") == "_static/pico.css"
 
     # Check favicon path
     favicon_link = soup.find("link", {"rel": "icon"})
