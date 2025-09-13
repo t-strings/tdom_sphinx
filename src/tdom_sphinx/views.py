@@ -17,11 +17,6 @@ class DefaultView:
     context: TdomContext
 
     def __call__(self) -> Element:
-        page_context = self.context.page_context
-        children = Markup(page_context.get("body", "<p>No content</p>"))
-        result = html(t"""\
-<{BaseLayout} context={self.context}>
-{children}
-</{BaseLayout}>
-""")
-        return result
+        # Directly instantiate and invoke the BaseLayout to avoid nested HTML assembly
+        layout = BaseLayout(context=self.context)
+        return layout()

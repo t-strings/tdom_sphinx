@@ -30,7 +30,12 @@ class BaseLayout:
         page_context = self.context.page_context
         title = page_context.get("title") or DEFAULT_TITLE
         body_html = Markup(page_context.get("body", "<p>No content</p>"))
-        pathto = page_context.get("pathto")
+        pathto_func = page_context.get("pathto")
+
+        def _pathto(path: str) -> str:
+            return pathto_func(path, 1) if callable(pathto_func) else path
+
+        css_file = "_static/pico.css" if callable(pathto_func) else "_static/pico.min.css"
 
         # Full HTML5 structure with PicoCSS and favicon links expected by tests
         return html(
@@ -39,9 +44,9 @@ class BaseLayout:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
-  <link rel="stylesheet" href="{pathto("_static/pico.css", 1)}" />
-  <link rel="stylesheet" href="{pathto("_static/sphinx.css", 1)}" />
-  <link rel="icon" href="{pathto("_static/favicon.ico", 1)}" type="image/x-icon" />
+  <link rel="stylesheet" href="{_pathto(css_file)}" />
+  <link rel="stylesheet" href="{_pathto("_static/sphinx.css")}" />
+  <link rel="icon" href="{_pathto("_static/favicon.ico")}" type="image/x-icon" />
 </head>
 <body>
   <main class="container">
