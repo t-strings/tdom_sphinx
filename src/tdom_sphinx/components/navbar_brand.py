@@ -1,33 +1,20 @@
-from pathlib import PurePath
+from typing import Callable
 
-from tdom import html
-
-from tdom_sphinx import PathTo
-from tdom_sphinx.components.navbar_brand_logo import NavbarBrandLogo
-from tdom_sphinx.theme_config import NavbarBrandConfig
+from tdom import Node, html
 
 
-def NavbarBrand(*, pathto: PathTo, brand_config: NavbarBrandConfig):
-    icons = [
-        html(t"""\n
-<a class="navbar-item is-hidden-desktop" href={link.href} target="_blank">
-  <span class="icon" style={f"color: {link.color}"}>
-    <i class={link.icon_class}></i>
-  </span>
-</a>  
-            """)
-        for link in brand_config.links
-    ]
+def NavbarBrand(*, pathto: Callable[[str, int | None], str], href: str, title: str) -> Node:
+    """First <ul> of a PicoCSS navbar with brand link.
 
-    return html(t"""\n
-<div class="navbar-brand">
-    <{NavbarBrandLogo} pathto={pathto} config={brand_config.logo} />
-    {icons}
-
-    <div id="navbarBurger" class="navbar-burger burger" data-target="navMenu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-</div>
-        """)
+    Renders a <ul> containing a single <li> with an <a> whose text is wrapped
+    in <strong>.
+    """
+    return html(
+        t"""
+<ul>
+  <li>
+    <a href={pathto(href, 1)}><strong>{title}</strong></a>
+  </li>
+</ul>
+"""
+    )

@@ -1,26 +1,33 @@
-from pathlib import PurePath
+from typing import Sequence
 
-from tdom import html
+from tdom import Node, html
 
-from goku.components.navbar.brand import NavbarBrand, NavbarBrandConfig
-from goku.components.navbar.end import NavbarEnd, NavbarEndConfig
-from goku.components.navbar.more import NavbarMoreConfig
-from goku.components.navbar.start import NavbarStart, NavbarStartConfig
+from tdom_sphinx.components.navbar_brand import NavbarBrand
+from tdom_sphinx.components.navbar_links import NavbarLinks
+from tdom_sphinx.models import TdomContext
+from tdom_sphinx.theme_config import Link, IconLink
 
 
-def Navbar(brand_config: NavbarBrandConfig, root_path: PurePath,
-           start_config: NavbarStartConfig, current_path: PurePath,
-           more_config: NavbarMoreConfig, end_config: NavbarEndConfig | None,
-           ):
-    return html(t'''\n
-        <nav id="navbar" class="bd-navbar navbar has-shadow is-spaced">
-            <div class="container">
-                <{NavbarBrand} config={brand_config} root_path={root_path}/>
+def Navbar(*, brand_href: str, brand_title: str, context: TdomContext, nav_class: str = "container-fluid") -> Node:
+    """Render a PicoCSS-style navbar with brand and links sections.
 
-                <div id="navMenu" class="navbar-menu">
-                    <{NavbarStart} config={start_config} current_path={current_path} more_config={more_config} />
-                    {html(t'<{NavbarEnd} config={end_config}/>') if end_config else "" }
-                </div>
-            </div>
-        </nav>
-        ''')
+    - brand_href/brand_title: passed to NavbarBrand to render the brand link
+    - links/buttons: taken from context.config (attributes: nav_links, nav_buttons)
+      Backward compatibility: will fall back to legacy tdom_nav_links/tdom_nav_buttons if present.
+    - nav_class: class to apply to the <nav> element (defaults to Pico "container-fluid")
+    """
+    cfg = context.config
+    # Prefer new names; fall back to legacy for compatibility
+    links: Sequence[Link] = getattr(cfg, "nav_links", getattr(cfg, "tdom_nav_links", ()))  # type: ignore[assignment]
+    buttons: Sequence[IconLink] = getattr(cfg, "nav_buttons", getattr(cfg, "tdom_nav_buttons", ()))  # type: ignore[assignment]
+
+    pathto = context.page_context["pathto"]
+
+    return html(
+        t"""
+<nav class={nav_class}>
+  <{NavbarBrand} pathto={pathto} href={brand_href} title={brand_title} />
+  <{NavbarLinks} pathto={pathto} links={links} buttons={buttons} />
+</nav>
+"""
+    )
