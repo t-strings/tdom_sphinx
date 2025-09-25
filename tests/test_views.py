@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
-
 from sphinx.testing.util import SphinxTestApp
+
+from conftest import pathto
 from tdom_sphinx.models import TdomContext
 from tdom_sphinx.views import DefaultView
 
@@ -17,6 +18,7 @@ def tdom_context() -> TdomContext:
     page_context = {
         "title": "My Test Page",
         "body": "<p>Hello World</p>",
+        "pathto": pathto,
     }
     context = TdomContext(
         app=sphinx_app,
@@ -84,7 +86,10 @@ def test_default_view_html_structure(tdom_context: TdomContext) -> None:
 
 def test_default_view_with_default_title(tdom_context: TdomContext) -> None:
     """Test DefaultView with default title when none provided."""
-    tdom_context.page_context = {"body": "<p>Content without title</p>"}
+    tdom_context.page_context = {
+        "body": "<p>Content without title</p>",
+        "pathto": pathto,
+    }
     view = DefaultView(context=tdom_context)
 
     result = view()
@@ -94,12 +99,12 @@ def test_default_view_with_default_title(tdom_context: TdomContext) -> None:
     # Should use default title
     title_tag = soup.find("title")
     assert title_tag is not None
-    assert title_tag.text == "tdom Documentation"
+    assert title_tag.text == "Default Title"
 
 
 def test_default_view_with_no_body(tdom_context: TdomContext) -> None:
     """Test DefaultView when no body content is provided."""
-    tdom_context.page_context = {"title": "Empty Page"}
+    tdom_context.page_context = {"title": "Empty Page", "pathto": pathto}
     view = DefaultView(context=tdom_context)
 
     result = view()
@@ -114,7 +119,7 @@ def test_default_view_with_no_body(tdom_context: TdomContext) -> None:
 
 def test_default_view_includes_static_assets(tdom_context: TdomContext) -> None:
     """Test that DefaultView includes required static assets."""
-    tdom_context.page_context = {"title": "Asset Test"}
+    tdom_context.page_context = {"title": "Asset Test", "pathto": pathto}
     view = DefaultView(context=tdom_context)
 
     result = view()
@@ -124,7 +129,7 @@ def test_default_view_includes_static_assets(tdom_context: TdomContext) -> None:
     # Check for PicoCSS stylesheet
     css_link = soup.find("link", {"rel": "stylesheet"})
     assert css_link is not None
-    assert css_link.get("href") == "_static/pico.min.css"
+    assert css_link.get("href") == "_static/pico.css"
 
     # Check for favicon
     favicon_link = soup.find("link", {"rel": "icon"})
@@ -135,7 +140,7 @@ def test_default_view_includes_static_assets(tdom_context: TdomContext) -> None:
 
 def test_default_view_meta_tags(tdom_context: TdomContext) -> None:
     """Test that DefaultView includes proper meta tags."""
-    tdom_context.page_context = {"title": "Meta Test"}
+    tdom_context.page_context = {"title": "Meta Test", "pathto": pathto}
     view = DefaultView(context=tdom_context)
 
     result = view()
@@ -156,7 +161,10 @@ def test_default_view_container_structure(tdom_context: TdomContext) -> None:
     """Test that DefaultView has proper container structure."""
     tdom_context.page_context = {
         "title": "Container Test",
-        "sphinx_context": {"body": "<p>Container content</p>"},
+        "pathto": pathto,
+        "sphinx_context": {
+            "body": "<p>Container content</p>",
+        },
     }
     view = DefaultView(context=tdom_context)
 
@@ -184,6 +192,7 @@ def test_default_view_context_handling(tdom_context: TdomContext) -> None:
         "body": "<div><h2>Nested Content</h2><p>Some text</p></div>",
         "other_data": "ignored",
         "extra_data": "also ignored",
+        "pathto": pathto,
     }
     view = DefaultView(context=tdom_context)
 

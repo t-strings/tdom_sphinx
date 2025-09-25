@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from sphinx.testing.util import SphinxTestApp
+
+from conftest import pathto
 from tdom_sphinx.models import View
 from tdom_sphinx.template_bridge import TdomBridge
 
@@ -19,6 +21,7 @@ def sphinx_context() -> dict:
         "title": "My Test Page",
         "body": "<p>Hello World</p>",
         "sphinx_app": sphinx_app,
+        "pathto": pathto,
     }
     return context
 

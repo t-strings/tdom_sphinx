@@ -10,6 +10,8 @@ import pytest
 from bs4 import BeautifulSoup
 from sphinx.testing.util import SphinxTestApp
 
+from tdom_sphinx.models import TdomContext
+
 pytest_plugins = ("sphinx.testing.fixtures",)
 
 
@@ -32,7 +34,7 @@ def registry():
 
 # ----- SPHINX TESTING FIXTURES -----
 
-_TESTS_ROOT = Path(__file__).resolve().parent
+_TESTS_ROOT = Path(__file__).resolve().parent / "tests"
 _ROOTS_DIR = _TESTS_ROOT / "roots"
 
 
@@ -59,3 +61,28 @@ def page(content: SphinxTestApp, request) -> Generator[str, Any, None]:
 def soup(page: str) -> Generator[BeautifulSoup, Any, None]:
     """Get the text for a page and convert to BeautifulSoup document."""
     yield BeautifulSoup(page, "html.parser")
+
+
+def pathto(filename: str, flag: int = 0) -> str:
+    return filename
+
+
+@pytest.fixture
+def tdom_context() -> TdomContext:
+    # Use basic Sphinx as the SphinxTestApp root
+    src_dir = Path(__file__).parent / "tests/roots/test-basic-sphinx"
+    sphinx_app = SphinxTestApp(srcdir=src_dir)
+
+    page_context = {
+        "title": "My Test Page",
+        "site_title": "My Test Site",
+        "body": "<p>Hello World</p>",
+        "pathto": pathto,
+    }
+    context = TdomContext(
+        app=sphinx_app,
+        environment=sphinx_app.env,
+        config=sphinx_app.config,
+        page_context=page_context,
+    )
+    return context

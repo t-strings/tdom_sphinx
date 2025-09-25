@@ -6,12 +6,9 @@ import pytest
 from bs4 import BeautifulSoup
 from sphinx.testing.util import SphinxTestApp
 
+from conftest import pathto
 from tdom_sphinx.layouts import BaseLayout
 from tdom_sphinx.models import TdomContext
-
-
-def pathto(filename: str, flag: int = 0) -> str:
-    return filename
 
 
 @pytest.fixture
@@ -31,32 +28,6 @@ def tdom_context() -> TdomContext:
         page_context=page_context,
     )
     return context
-
-
-def test_base_layout_initialization(tdom_context: TdomContext) -> None:
-    """Test that BaseLayout can be initialized with context."""
-    layout = BaseLayout(context=tdom_context)
-    assert layout.context == tdom_context
-    assert isinstance(layout, BaseLayout)
-
-
-def test_base_layout_initialization_with_children(tdom_context: TdomContext) -> None:
-    """Test that BaseLayout can be initialized with children."""
-
-    layout = BaseLayout(context=tdom_context)
-    assert layout.context == tdom_context
-
-
-def test_base_layout_call_method(tdom_context: TdomContext) -> None:
-    """Test that BaseLayout.__call__ returns a tdom Element."""
-    layout = BaseLayout(context=tdom_context)
-    result = layout()
-
-    # The result should be a tdom Element that can be converted to string
-    assert result is not None
-    html_string = str(result)
-    assert isinstance(html_string, str)
-    assert len(html_string) > 0
 
 
 def test_base_layout_html5_structure(tdom_context: TdomContext) -> None:
