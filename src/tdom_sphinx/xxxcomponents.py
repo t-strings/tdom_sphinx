@@ -1,30 +1,8 @@
-from collections.abc import Callable
-
 from tdom import html
 from tdom.nodes import Node
 from tdom.parser import parse_html
 
 from tdom_sphinx.models import TdomContext
-
-type PathTo = Callable[[str, int | None], str]
-
-
-def Head(*, pathto: PathTo, title: str, site_title: str | None = None) -> Node:
-    if site_title is None:
-        full_title = f"{title}"
-    else:
-        full_title = f"{title} - {site_title}"
-
-    return html(t'''
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{full_title}</title>
-  <link rel="stylesheet" href="{pathto("_static/pico.css", 1)}" />
-  <link rel="stylesheet" href="{pathto("_static/sphinx.css", 1)}" />
-  <link rel="icon" href="{pathto("_static/favicon.ico", 1)}" type="image/x-icon" />
-</head>
-''')
 
 
 def Body(*, context: TdomContext):
@@ -33,7 +11,6 @@ def Body(*, context: TdomContext):
 
     return html(t"""\n
 <body>
-<p>xxxxx</p>
   <main class="container">
     <{Header} context={context} />
     <article>

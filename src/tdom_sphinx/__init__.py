@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from sphinx.application import Sphinx
 
 THEME_ROOT = Path(__file__).parent / "theme"
+
+type PathTo = Callable[[str, int | None], str]
 
 
 def _on_builder_inited(app: Sphinx) -> None:

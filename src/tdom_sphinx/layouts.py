@@ -6,9 +6,9 @@ Provides a BaseLayout that renders a complete HTML5 document using t-strings.
 from dataclasses import dataclass
 
 from markupsafe import Markup
-from tdom import Element, html, Node
+from tdom import Node, html
 
-from tdom_sphinx.components import Head
+from tdom_sphinx.components.head import Head
 from tdom_sphinx.models import TdomContext
 
 

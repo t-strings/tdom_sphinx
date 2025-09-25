@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from conftest import pathto
-from tdom_sphinx.components import Head, Header, Body
+from tdom_sphinx.xxxcomponents import Head, Header, Body
 from tdom_sphinx.models import TdomContext
 
 
