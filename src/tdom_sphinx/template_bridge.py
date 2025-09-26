@@ -13,6 +13,9 @@ class TdomBridge(BuiltinTemplateLoader):
     """
 
     def render(self, template, context: dict) -> str:
+        # TODO Normalize Sphinx context to a theme context
+        context["site_title"] = context["project"]
+        context["title"] = context.get("title", "No Title")
         # Expect the builder-init event to put Sphinx app into context
         sphinx_app = context.get("sphinx_app")
         tdom_context = TdomContext(

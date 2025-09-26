@@ -3,11 +3,9 @@
 from pathlib import Path
 
 import pytest
-
 from sphinx.testing.util import SphinxTestApp
 
 from conftest import pathto
-from tdom_sphinx.models import View
 from tdom_sphinx.template_bridge import TdomBridge
 
 pytestmark = pytest.mark.sphinx("html", testroot="test-basic-sphinx")
@@ -18,6 +16,7 @@ def sphinx_context() -> dict:
     srcdir = Path(__file__).parent / "roots/test-basic-sphinx"
     sphinx_app = SphinxTestApp(srcdir=srcdir)
     context = {
+        "site_title": "My Test Site",
         "title": "My Test Page",
         "body": "<p>Hello World</p>",
         "sphinx_app": sphinx_app,
@@ -31,4 +30,4 @@ def test_render_default_view(sphinx_context: dict) -> None:
 
     tb = TdomBridge()
     result = tb.render("some_template", sphinx_context)
-    assert "<title>My Test Page</title>" in result
+    assert "<title>My Test Page - My Test Site</title>" in result

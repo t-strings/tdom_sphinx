@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 
-from markupsafe import Markup
-from tdom import Element, html
+from tdom import Node
 
-from tdom_sphinx.layouts import BaseLayout
+from tdom_sphinx.components.base_layout import BaseLayout
 from tdom_sphinx.models import TdomContext
 
 
@@ -16,7 +15,6 @@ class DefaultView:
 
     context: TdomContext
 
-    def __call__(self) -> Element:
+    def __call__(self) -> Node:
         # Directly instantiate and invoke the BaseLayout to avoid nested HTML assembly
-        layout = BaseLayout(context=self.context)
-        return layout()
+        return BaseLayout(context=self.context)

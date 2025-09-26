@@ -16,8 +16,8 @@ dependencies = [
 tdom = { path = "../tdom", editable = true }
 
 [tool.pytest.ini_options]
-testpaths = ["tdom", "docs"]
-python_files = ["*_test.py"]
+testpaths = ["src", "tests"]
+python_files = ["*_test.py", "test_*.py"]
 addopts = "-p no:doctest"
 
 [build-system]

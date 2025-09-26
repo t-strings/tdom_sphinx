@@ -4,8 +4,8 @@ extensions = [
     "tdom_sphinx",
 ]
 
+project = "tdom-sphinx"
 html_theme = "tdom-theme"
-html_title = "Test tdom Theme"
 
 # Optional registry for tdom
 tdom_registry = {}
