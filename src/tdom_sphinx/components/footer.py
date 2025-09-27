@@ -16,8 +16,8 @@ def Footer(*, context: TdomContext) -> Node:
     year = datetime.now().year
 
     return html(
-        t"""
-<footer>
+        t"""\
+<footer class="container">
   <p style="text-align: center">© {year} {site_title}</p>
 </footer>
 """

@@ -13,7 +13,9 @@ def test_navbar_structure_with_brand_and_links(tdom_context: TdomContext):
         Link(href="/about", style="", text="About"),
     ]
     tdom_context.config.nav_buttons = [
-        IconLink(href="https://github.com/org", color="#000", icon_class="fa fa-github"),
+        IconLink(
+            href="https://github.com/org", color="#000", icon_class="fa fa-github"
+        ),
     ]
 
     result = html(
@@ -24,7 +26,7 @@ def test_navbar_structure_with_brand_and_links(tdom_context: TdomContext):
 
     soup = BeautifulSoup(str(result), "html.parser")
 
-    nav = soup.select_one("nav.container-fluid")
+    nav = soup.select_one("nav")
     assert nav is not None
 
     uls = nav.select("ul")

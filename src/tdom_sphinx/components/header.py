@@ -22,7 +22,7 @@ def Header(*, context: TdomContext) -> Node:
 
     return html(
         t"""
-<header class="is-fixed">
+<header class="is-fixed container">
   <{Navbar} brand_href={brand_href} brand_title={brand_title} context={context} />
 </header>
 """

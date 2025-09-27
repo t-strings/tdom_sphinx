@@ -16,7 +16,7 @@ def Main(*, context: TdomContext) -> Node:
 
     return html(
         t"""
-<main>
+<main class="container">
   {safe_body}
 </main>
 """

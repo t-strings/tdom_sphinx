@@ -17,6 +17,7 @@ def Head(*, context: TdomContext) -> Node:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{full_title}</title>
+  <link rel="stylesheet" href="{pathto("_static/tdom-sphinx.css", 1)}" />
   <link rel="stylesheet" href="{pathto("_static/pico.css", 1)}" />
   <link rel="stylesheet" href="{pathto("_static/sphinx.css", 1)}" />
   <link rel="icon" href="{pathto("_static/favicon.ico", 1)}" type="image/x-icon" />

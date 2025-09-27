@@ -8,7 +8,7 @@ from tdom_sphinx.models import TdomContext
 from tdom_sphinx.theme_config import Link, IconLink
 
 
-def Navbar(*, brand_href: str, brand_title: str, context: TdomContext, nav_class: str = "container-fluid") -> Node:
+def Navbar(*, brand_href: str, brand_title: str, context: TdomContext) -> Node:
     """Render a PicoCSS-style navbar with brand and links sections.
 
     - brand_href/brand_title: passed to NavbarBrand to render the brand link
@@ -18,14 +18,18 @@ def Navbar(*, brand_href: str, brand_title: str, context: TdomContext, nav_class
     """
     cfg = context.config
     # Prefer new names; fall back to legacy for compatibility
-    links: Sequence[Link] = getattr(cfg, "nav_links", getattr(cfg, "tdom_nav_links", ()))  # type: ignore[assignment]
-    buttons: Sequence[IconLink] = getattr(cfg, "nav_buttons", getattr(cfg, "tdom_nav_buttons", ()))  # type: ignore[assignment]
+    links: Sequence[Link] = getattr(
+        cfg, "nav_links", getattr(cfg, "tdom_nav_links", ())
+    )  # type: ignore[assignment]
+    buttons: Sequence[IconLink] = getattr(
+        cfg, "nav_buttons", getattr(cfg, "tdom_nav_buttons", ())
+    )  # type: ignore[assignment]
 
     pathto = context.page_context["pathto"]
 
     return html(
         t"""
-<nav class={nav_class}>
+<nav>
   <{NavbarBrand} pathto={pathto} href={brand_href} title={brand_title} />
   <{NavbarLinks} pathto={pathto} links={links} buttons={buttons} />
 </nav>
