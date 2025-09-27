@@ -29,6 +29,8 @@ dev = [
     "beautifulsoup4>=4.13.5",
     "htpy>=25.8.1",
     "markupsafe>=3.0.2",
+    "myst-parser>=4.0.0",
     "pyright>=1.1.405",
     "pytest>=8.4.2",
+    "sphinx-autobuild>=2024.4.11",
 ]

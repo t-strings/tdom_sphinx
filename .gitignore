@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Sphinx
+docs/_build
+
 .junie
 .aiassistant

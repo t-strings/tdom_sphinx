@@ -20,6 +20,6 @@ def Head(*, context: TdomContext) -> Node:
   <link rel="stylesheet" href="{pathto("_static/tdom-sphinx.css", 1)}" />
   <link rel="stylesheet" href="{pathto("_static/pico.css", 1)}" />
   <link rel="stylesheet" href="{pathto("_static/sphinx.css", 1)}" />
-  <link rel="icon" href="{pathto("_static/favicon.ico", 1)}" type="image/x-icon" />
-</head>
+  <link rel="stylesheet" href="{pathto("_static/pygments.css", 1)}" />
+  <link rel="icon" href="{pathto("_static/favicon.ico", 1)}"  type="image/x-icon" />
 ''')

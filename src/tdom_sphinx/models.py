@@ -29,5 +29,6 @@ View = _FunctionView | _ClassView
 class TdomContext:
     app: Sphinx
     config: SphinxConfig
+
     environment: SphinxBuildEnvironment
     page_context: dict
