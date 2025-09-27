@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from tdom_sphinx.components.navbar_links import NavbarLinks
-from tdom_sphinx.theme_config import Link, IconLink
+from tdom_sphinx.models import Link, IconLink
 
 
 def test_navbar_links_renders_links_and_buttons():

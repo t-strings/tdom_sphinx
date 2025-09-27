@@ -2,7 +2,7 @@ from typing import Callable, Sequence
 
 from tdom import Node, html
 
-from tdom_sphinx.theme_config import IconLink, Link
+from tdom_sphinx.models import IconLink, Link
 
 
 def NavbarLinks(

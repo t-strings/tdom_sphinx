@@ -39,7 +39,7 @@ def test_base_layout_head_section(tdom_context: TdomContext) -> None:
     # stylesheets and favicon
     css_link = head.find("link", {"rel": "stylesheet"})
     assert css_link is not None
-    assert css_link.get("href") == "_static/pico.css"
+    assert css_link.get("href") == "_static/tdom-sphinx.css"
 
     favicon_link = head.find("link", {"rel": "icon"})
     assert favicon_link is not None
@@ -170,7 +170,7 @@ def test_base_layout_static_asset_paths(tdom_context: TdomContext) -> None:
     soup = BeautifulSoup(str(result), "html.parser")
 
     css_link = soup.find("link", {"rel": "stylesheet"})
-    assert css_link.get("href") == "_static/pico.css"
+    assert css_link.get("href") == "_static/tdom-sphinx.css"
 
     favicon_link = soup.find("link", {"rel": "icon"})
     assert favicon_link.get("href") == "_static/favicon.ico"

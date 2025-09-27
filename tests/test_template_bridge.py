@@ -16,7 +16,7 @@ def sphinx_context() -> dict:
     srcdir = Path(__file__).parent / "roots/test-basic-sphinx"
     sphinx_app = SphinxTestApp(srcdir=srcdir)
     context = {
-        "site_title": "My Test Site",
+        "project": "My Test Site",
         "title": "My Test Page",
         "body": "<p>Hello World</p>",
         "sphinx_app": sphinx_app,

@@ -19,7 +19,7 @@ def test_header_wraps_navbar_and_is_fixed(tdom_context: TdomContext):
     header = soup.select_one("header.is-fixed")
     assert header is not None
 
-    nav = header.select_one("nav.container-fluid")
+    nav = header.select_one("nav")
     assert nav is not None
 
     # Brand should come from site_title and href should be "/"

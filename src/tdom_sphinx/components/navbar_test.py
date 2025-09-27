@@ -2,8 +2,7 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from tdom_sphinx.components.navbar import Navbar
-from tdom_sphinx.models import TdomContext
-from tdom_sphinx.theme_config import Link, IconLink
+from tdom_sphinx.models import TdomContext, Link, IconLink
 
 
 def test_navbar_structure_with_brand_and_links(tdom_context: TdomContext):

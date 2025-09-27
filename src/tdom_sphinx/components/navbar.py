@@ -4,8 +4,7 @@ from tdom import Node, html
 
 from tdom_sphinx.components.navbar_brand import NavbarBrand
 from tdom_sphinx.components.navbar_links import NavbarLinks
-from tdom_sphinx.models import TdomContext
-from tdom_sphinx.theme_config import Link, IconLink
+from tdom_sphinx.models import TdomContext, Link, IconLink
 
 
 def Navbar(*, brand_href: str, brand_title: str, context: TdomContext) -> Node:
