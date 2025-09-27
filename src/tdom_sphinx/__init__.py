@@ -5,53 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-from sphinx.application import Sphinx
+# Import Sphinx event handlers from a dedicated module
+from .sphinx_events import _on_builder_inited, _on_html_page_context
 
 THEME_ROOT = Path(__file__).parent / "theme"
 
 type PathTo = Callable[[str, int | None], str]
-
-
-def _on_builder_inited(app: Sphinx) -> None:
-    """Ensure our Template Bridge is used for HTML builds.
-
-    This avoids the need to set ``template_bridge`` in conf.py for tests.
-    """
-    try:
-        # Lazy import to avoid hard dependency at module import time
-        from tdom_sphinx.template_bridge import TdomBridge
-    except ImportError:  # pragma: no cover - fallback if import fails
-        return
-
-    # If the builder exists (e.g., during HTML builds), swap the templates
-    builder = getattr(app, "builder", None)
-    if builder is not None:
-        try:
-            # BuiltinTemplateLoader expects the app instance
-            builder.templates = TdomBridge(app)  # type: ignore[assignment]
-        except Exception:
-            # Don't break Sphinx build; just leave default bridge in place
-            pass
-
-
-def _on_html_page_context(
-    app: Sphinx,
-    pagename: str,
-    templatename: str,
-    context: dict,
-    doctree,
-) -> None:
-    """Inject the Sphinx app and selected config into the page context.
-
-    - Ensure ``context['sphinx_app']`` is available for the Template Bridge.
-    - If ``navbar`` is defined in ``conf.py`` (thus available on ``app.config``),
-      expose it on the context for templates/views to consume.
-    """
-    # For our Template Bridge
-    context.setdefault("sphinx_app", app)
-
-    # Surface optional navbar configuration from conf.py
-    context["navbar"] = app.config["navbar"]
 
 
 def setup(app) -> dict[str, Any]:
