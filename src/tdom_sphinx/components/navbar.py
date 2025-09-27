@@ -4,28 +4,27 @@ from tdom import Node, html
 
 from tdom_sphinx.components.navbar_brand import NavbarBrand
 from tdom_sphinx.components.navbar_links import NavbarLinks
-from tdom_sphinx.models import TdomContext, Link, IconLink
+from tdom_sphinx.models import Link, IconLink, NavbarConfig, PageContext
 
 
-def Navbar(*, brand_href: str, brand_title: str, context: TdomContext) -> Node:
+def Navbar(
+    *, brand_href: str, brand_title: str, page_context: PageContext, navbar: NavbarConfig | None = None
+) -> Node:
     """Render a PicoCSS-style navbar with brand and links sections.
 
     - brand_href/brand_title: passed to NavbarBrand to render the brand link
-    - links/buttons: taken from context.page_context['navbar'] if available
+    - links/buttons: taken from provided `navbar` if available
     - Fallback to empty when not provided.
     """
-    page_ctx = context.page_context
-    navbar_val = page_ctx.get("navbar") if isinstance(page_ctx, dict) else None
 
-    # Extract links/buttons from the navbar mapping if present
-    # Expect concrete Link/IconLink objects; default to empty sequences.
+    # Extract links/buttons from the navbar config if present
     links: Sequence[Link] = ()
     buttons: Sequence[IconLink] = ()
-    if isinstance(navbar_val, dict):
-        links = navbar_val.get("links") or ()  # type: ignore[assignment]
-        buttons = navbar_val.get("buttons") or ()  # type: ignore[assignment]
+    if isinstance(navbar, NavbarConfig):
+        links = navbar.links or ()
+        buttons = navbar.buttons or ()
 
-    pathto = page_ctx["pathto"]
+    pathto = getattr(page_context, "pathto", None) or (page_context.get("pathto") if isinstance(page_context, dict) else None)
 
     return html(
         t"""

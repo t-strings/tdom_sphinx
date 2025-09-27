@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 # Import Sphinx event handlers from a dedicated module
-from .sphinx_events import _on_builder_inited, _on_html_page_context
+from .sphinx_events import _on_html_page_context, _on_builder_inited
 
 THEME_ROOT = Path(__file__).parent / "theme"
 
@@ -26,9 +26,9 @@ def setup(app) -> dict[str, Any]:
     app.config.template_bridge = "tdom_sphinx.template_bridge.TdomBridge"
 
     # Register optional config values we may surface in page context
-    # `navbar` can be defined in conf.py as a simple structure (dict/obj) and
-    # will be passed through into the HTML page context by our event handler.
-    app.add_config_value("navbar", None, "env")
+    # `site_config` can be defined in conf.py (as a SiteConfig) and will be
+    # passed through into the HTML page context by our event handler.
+    app.add_config_value("site_config", None, "env")
 
     # Connect event handlers used by our custom Template Bridge and views
     app.connect("builder-inited", _on_builder_inited)

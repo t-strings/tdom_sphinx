@@ -2,26 +2,26 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from tdom_sphinx.components.navbar import Navbar
-from tdom_sphinx.models import TdomContext, Link, IconLink
+from tdom_sphinx.models import Link, IconLink, NavbarConfig
 
 
-def test_navbar_structure_with_brand_and_links(tdom_context: TdomContext):
-    # Provide navbar data via the page_context as required
-    tdom_context.page_context["navbar"] = {
-        "links": [
+def test_navbar_structure_with_brand_and_links(page_context):
+    # Provide navbar data directly to the component as required
+    navbar_cfg = NavbarConfig(
+        links=[
             Link(href="/docs", style="", text="Docs"),
             Link(href="/about", style="", text="About"),
         ],
-        "buttons": [
+        buttons=[
             IconLink(
                 href="https://github.com/org", color="#000", icon_class="fa fa-github"
             ),
         ],
-    }
+    )
 
     result = html(
         t"""
-        <{Navbar} brand_href="/" brand_title="My Site" context={tdom_context} />
+        <{Navbar} brand_href="/" brand_title="My Site" page_context={page_context} navbar={navbar_cfg} />
         """
     )
 

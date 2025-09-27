@@ -2,7 +2,6 @@
 # both a global registry and a per-request container.
 
 from dataclasses import dataclass
-
 from pathlib import Path
 from typing import Any, Generator
 
@@ -10,7 +9,13 @@ import pytest
 from bs4 import BeautifulSoup
 from sphinx.testing.util import SphinxTestApp
 
-from tdom_sphinx.models import TdomContext
+from tdom_sphinx.models import (
+    IconLink,
+    Link,
+    NavbarConfig,
+    PageContext,
+    SiteConfig,
+)
 
 pytest_plugins = ("sphinx.testing.fixtures",)
 
@@ -68,21 +73,75 @@ def pathto(filename: str, flag: int = 0) -> str:
 
 
 @pytest.fixture
-def tdom_context() -> TdomContext:
-    # Use basic Sphinx as the SphinxTestApp root
-    src_dir = Path(__file__).parent / "tests/roots/test-basic-sphinx"
-    sphinx_app = SphinxTestApp(srcdir=src_dir)
+def sphinx_app() -> SphinxTestApp:
+    """A Sphinx test application rooted at basic test project.
 
-    page_context = {
+    Also attaches a default SiteConfig which some tests rely on.
+    """
+    src_dir = Path(__file__).parent / "tests/roots/test-basic-sphinx"
+    app = SphinxTestApp(srcdir=src_dir)
+    # Attach a default SiteConfig used by the template bridge
+    setattr(app, "site_config", SiteConfig(site_title="My Test Site"))
+    return app
+
+
+@pytest.fixture
+def page_context():
+    """Default mutable, dict-style page_context used by most component tests."""
+    return {
         "title": "My Test Page",
         "site_title": "My Test Site",
         "body": "<p>Hello World</p>",
         "pathto": pathto,
     }
-    context = TdomContext(
-        app=sphinx_app,
-        environment=sphinx_app.env,
-        config=sphinx_app.config,
-        page_context=page_context,
+
+
+@pytest.fixture
+def page_context_typed() -> PageContext:
+    """Typed PageContext for tests that require dataclass instance."""
+    return PageContext(
+        body="<p>Hello World</p>",
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        pathto=pathto,
+        sourcename=None,
+        templatename="page.html",
+        title="My Test Page",
+        toc="",
     )
-    return context
+
+
+@pytest.fixture
+def site_config() -> SiteConfig:
+    return SiteConfig(
+        site_title="My Test Site",
+        root_url="/",
+        navbar=NavbarConfig(
+            links=[
+                Link(href="/docs", style="", text="Docs"),
+                Link(href="/about", style="", text="About"),
+            ],
+            buttons=[
+                IconLink(
+                    href="https://github.com/org",
+                    color="#000",
+                    icon_class="fa fa-github",
+                ),
+            ],
+        ),
+    )
+
+
+@pytest.fixture
+def sphinx_context(sphinx_app: SphinxTestApp, page_context_typed: PageContext) -> dict:
+    return {
+        "project": "My Test Site",
+        "title": page_context_typed.title,
+        "body": page_context_typed.body,
+        "sphinx_app": sphinx_app,
+        "pathto": pathto,
+        "page_context": page_context_typed,
+    }

@@ -1,15 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, List
-
-from sphinx.application import (
-    BuildEnvironment as SphinxBuildEnvironment,
-)
-from sphinx.application import (
-    Config as SphinxConfig,
-)
-from sphinx.application import (
-    Sphinx,
-)
+from typing import Callable, Iterable, List, Protocol
 
 
 class _FunctionView(Protocol):
@@ -25,13 +15,44 @@ class _ClassView(Protocol):
 View = _FunctionView | _ClassView
 
 
-@dataclass
-class TdomContext:
-    app: Sphinx
-    config: SphinxConfig
+@dataclass(frozen=True)
+class Rellink:
+    """A Sphinx rellink."""
 
-    environment: SphinxBuildEnvironment
-    page_context: dict
+    pagename: str
+    link_text: str
+    title: str | None = None
+    accesskey: str | None = None
+
+
+@dataclass(frozen=True)
+class PageContext:
+    """Per-page info from the underlying system needed by layout."""
+
+    body: object
+    css_files: Iterable
+    display_toc: bool
+    js_files: Iterable
+    pagename: str
+    page_source_suffix: str
+    pathto: Callable[
+        [
+            str,
+        ],
+        str,
+    ]
+    sourcename: str | None
+    templatename: str
+    title: str
+    toc: object
+    builder: str = "html"
+    meta: object = None
+    metatags: str = ""
+    next: object | None = None
+    parents: object = None
+    prev: object | None = None
+    rellinks: object = None
+    toctree: object | None = None
 
 
 @dataclass(frozen=True)
@@ -52,5 +73,14 @@ class IconLink:
 class NavbarConfig:
     links: List[Link]
     buttons: List[IconLink]
-    brand_title: str | None = None
-    brand_href: str | None = None
+
+
+# --- Site-level configuration models
+
+
+@dataclass(frozen=True)
+class SiteConfig:
+    navbar: NavbarConfig | None = None
+    site_title: str | None = None
+    root_url: str = "/"
+    copyright: str | None = None

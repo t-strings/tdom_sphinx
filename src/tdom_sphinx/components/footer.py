@@ -2,17 +2,26 @@ from datetime import datetime
 
 from tdom import Node, html
 
-from tdom_sphinx.models import TdomContext
+from tdom_sphinx.models import PageContext
 
 
-def Footer(*, context: TdomContext) -> Node:
+def Footer(*, page_context: PageContext) -> Node:
     """Page footer with centered copyright text.
 
-    Uses site title from the page context if available, otherwise falls back
-    to the page title. Includes the current year.
+    Prefers explicit site_title, then page title. Includes the current year.
     """
-    page_ctx = context.page_context
-    site_title = page_ctx.get("site_title") or page_ctx.get("title") or ""
+
+    # Prefer explicit site_title, then page title
+    site_title = getattr(page_context, "site_title", None)
+    if site_title is None and isinstance(page_context, dict):
+        site_title = page_context.get("site_title")
+
+    title = getattr(page_context, "title", None)
+    if title is None and isinstance(page_context, dict):
+        title = page_context.get("title")
+
+    site_title = site_title or title or ""
+
     year = datetime.now().year
 
     return html(

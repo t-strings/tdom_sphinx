@@ -4,12 +4,11 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from tdom_sphinx.components.footer import Footer
-from tdom_sphinx.models import TdomContext
 
 
-def test_footer_contains_centered_copyright(tdom_context: TdomContext):
+def test_footer_contains_centered_copyright(page_context):
     result = html(t"""
-        <{Footer} context={tdom_context} />
+        <{Footer} page_context={page_context} />
     """)
 
     soup = BeautifulSoup(str(result), "html.parser")

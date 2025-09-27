@@ -1,46 +1,25 @@
 """Tests for the tdom Sphinx views module."""
 
-from pathlib import Path
-
-import pytest
 from bs4 import BeautifulSoup
-from sphinx.testing.util import SphinxTestApp
 
-from conftest import pathto
-from tdom_sphinx.models import TdomContext
+from tdom_sphinx.models import PageContext, SiteConfig
 from tdom_sphinx.views import DefaultView
 
 
-@pytest.fixture
-def tdom_context() -> TdomContext:
-    srcdir = Path(__file__).parent / "roots/test-basic-sphinx"
-    sphinx_app = SphinxTestApp(srcdir=srcdir)
-    page_context = {
-        "site_title": "My Test Site",
-        "title": "My Test Page",
-        "body": "<p>Hello World</p>",
-        "pathto": pathto,
-    }
-    context = TdomContext(
-        app=sphinx_app,
-        environment=sphinx_app.env,
-        config=sphinx_app.config,
-        page_context=page_context,
-    )
-    return context
+def test_default_view_initialization(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
+    """Test that DefaultView can be initialized."""
+    view = DefaultView(page_context=page_context, site_config=site_config)
 
-
-def test_default_view_initialization(tdom_context: TdomContext) -> None:
-    """Test that DefaultView can be initialized with context."""
-    view = DefaultView(context=tdom_context)
-
-    assert view.context == tdom_context
     assert isinstance(view, DefaultView)
 
 
-def test_default_view_call_method(tdom_context: TdomContext):
+def test_default_view_call_method(
+    page_context: PageContext, site_config: SiteConfig
+):
     """Test that DefaultView.__call__ returns a tdom Element."""
-    view = DefaultView(context=tdom_context)
+    view = DefaultView(page_context=page_context, site_config=site_config)
     result = view()
 
     # The result should be a tdom Element that can be converted to string
@@ -50,9 +29,11 @@ def test_default_view_call_method(tdom_context: TdomContext):
     assert len(html_string) > 0
 
 
-def test_default_view_html_structure(tdom_context: TdomContext) -> None:
+def test_default_view_html_structure(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     """Test that DefaultView renders proper HTML structure."""
-    view = DefaultView(context=tdom_context)
+    view = DefaultView(page_context=page_context, site_config=site_config)
 
     result = view()
     html_string = str(result)
