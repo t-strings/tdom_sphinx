@@ -11,20 +11,21 @@ def Navbar(*, brand_href: str, brand_title: str, context: TdomContext) -> Node:
     """Render a PicoCSS-style navbar with brand and links sections.
 
     - brand_href/brand_title: passed to NavbarBrand to render the brand link
-    - links/buttons: taken from context.config (attributes: nav_links, nav_buttons)
-      Backward compatibility: will fall back to legacy tdom_nav_links/tdom_nav_buttons if present.
-    - nav_class: class to apply to the <nav> element (defaults to Pico "container-fluid")
+    - links/buttons: taken from context.page_context['navbar'] if available
+    - Fallback to empty when not provided.
     """
-    cfg = context.config
-    # Prefer new names; fall back to legacy for compatibility
-    links: Sequence[Link] = getattr(
-        cfg, "nav_links", getattr(cfg, "tdom_nav_links", ())
-    )  # type: ignore[assignment]
-    buttons: Sequence[IconLink] = getattr(
-        cfg, "nav_buttons", getattr(cfg, "tdom_nav_buttons", ())
-    )  # type: ignore[assignment]
+    page_ctx = context.page_context
+    navbar_val = page_ctx.get("navbar") if isinstance(page_ctx, dict) else None
 
-    pathto = context.page_context["pathto"]
+    # Extract links/buttons from the navbar mapping if present
+    # Expect concrete Link/IconLink objects; default to empty sequences.
+    links: Sequence[Link] = ()
+    buttons: Sequence[IconLink] = ()
+    if isinstance(navbar_val, dict):
+        links = navbar_val.get("links") or ()  # type: ignore[assignment]
+        buttons = navbar_val.get("buttons") or ()  # type: ignore[assignment]
+
+    pathto = page_ctx["pathto"]
 
     return html(
         t"""

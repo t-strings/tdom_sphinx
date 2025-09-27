@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, List
 
 from sphinx.application import (
     BuildEnvironment as SphinxBuildEnvironment,
@@ -46,3 +46,11 @@ class IconLink:
     href: str
     color: str
     icon_class: str
+
+
+@dataclass(frozen=True)
+class NavbarConfig:
+    links: List[Link]
+    buttons: List[IconLink]
+    brand_title: str | None = None
+    brand_href: str | None = None

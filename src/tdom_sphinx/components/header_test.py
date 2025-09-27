@@ -6,9 +6,8 @@ from tdom_sphinx.models import TdomContext
 
 
 def test_header_wraps_navbar_and_is_fixed(tdom_context: TdomContext):
-    # Configure some links/buttons to ensure NavbarLinks renders predictably
-    tdom_context.config.nav_links = []
-    tdom_context.config.nav_buttons = []
+    # Provide an empty navbar in page_context to keep predictable rendering
+    tdom_context.page_context["navbar"] = {"links": [], "buttons": []}
 
     result = html(t"""
         <{Header} context={tdom_context} />

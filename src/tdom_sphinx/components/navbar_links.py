@@ -15,8 +15,12 @@ def NavbarLinks(
 
     Renders a list of text links followed by a list of icon buttons.
     """
+    def _resolve(href: str) -> str:
+        # Only use Sphinx pathto for internal links; preserve absolute URLs
+        return href if "://" in href else pathto(href, 0)
+
     link_nodes = [
-        html(t"""<li><a href={pathto(l.href, 0)} class={l.style}>{l.text}</a></li>""")
+        html(t"""<li><a href={_resolve(l.href)} class={l.style}>{l.text}</a></li>""")
         for l in links
     ]
 
@@ -24,7 +28,7 @@ def NavbarLinks(
         html(
             t"""
 <li>
-  <a href={pathto(b.href, 0)}>
+  <a href={_resolve(b.href)}>
     <span class="icon" style={f"color: {b.color}"}>
       <i class={b.icon_class}></i>
     </span>

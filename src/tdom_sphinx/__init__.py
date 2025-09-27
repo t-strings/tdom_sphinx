@@ -20,7 +20,7 @@ def _on_builder_inited(app: Sphinx) -> None:
     try:
         # Lazy import to avoid hard dependency at module import time
         from tdom_sphinx.template_bridge import TdomBridge
-    except Exception:  # pragma: no cover - fallback if import fails
+    except ImportError:  # pragma: no cover - fallback if import fails
         return
 
     # If the builder exists (e.g., during HTML builds), swap the templates
@@ -41,11 +41,17 @@ def _on_html_page_context(
     context: dict,
     doctree,
 ) -> None:
-    """Inject the Sphinx app into the page context for the Template Bridge.
+    """Inject the Sphinx app and selected config into the page context.
 
-    Our bridge expects ``context['sphinx_app']`` to be available.
+    - Ensure ``context['sphinx_app']`` is available for the Template Bridge.
+    - If ``navbar`` is defined in ``conf.py`` (thus available on ``app.config``),
+      expose it on the context for templates/views to consume.
     """
+    # For our Template Bridge
     context.setdefault("sphinx_app", app)
+
+    # Surface optional navbar configuration from conf.py
+    context["navbar"] = app.config["navbar"]
 
 
 def setup(app) -> dict[str, Any]:
@@ -57,7 +63,13 @@ def setup(app) -> dict[str, Any]:
     if THEME_ROOT.exists():
         app.add_html_theme("tdom-theme", str(THEME_ROOT))
 
+    # Register our Template Bridge by default so tests don't need to set it
     app.config.template_bridge = "tdom_sphinx.template_bridge.TdomBridge"
+
+    # Register optional config values we may surface in page context
+    # `navbar` can be defined in conf.py as a simple structure (dict/obj) and
+    # will be passed through into the HTML page context by our event handler.
+    app.add_config_value("navbar", None, "env")
 
     # Connect event handlers used by our custom Template Bridge and views
     app.connect("builder-inited", _on_builder_inited)

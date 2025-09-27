@@ -6,16 +6,18 @@ from tdom_sphinx.models import TdomContext, Link, IconLink
 
 
 def test_navbar_structure_with_brand_and_links(tdom_context: TdomContext):
-    # Configure links and buttons on the Sphinx config inside the context
-    tdom_context.config.nav_links = [
-        Link(href="/docs", style="", text="Docs"),
-        Link(href="/about", style="", text="About"),
-    ]
-    tdom_context.config.nav_buttons = [
-        IconLink(
-            href="https://github.com/org", color="#000", icon_class="fa fa-github"
-        ),
-    ]
+    # Provide navbar data via the page_context as required
+    tdom_context.page_context["navbar"] = {
+        "links": [
+            Link(href="/docs", style="", text="Docs"),
+            Link(href="/about", style="", text="About"),
+        ],
+        "buttons": [
+            IconLink(
+                href="https://github.com/org", color="#000", icon_class="fa fa-github"
+            ),
+        ],
+    }
 
     result = html(
         t"""
