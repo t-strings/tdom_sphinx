@@ -4,6 +4,8 @@ from itertools import repeat
 from pathlib import PurePosixPath
 from typing import Optional
 
+from tdom import Node
+
 ROOT = PurePosixPath("/")
 ROOT_PATHS = ("/", "/index", PurePosixPath("/"), PurePosixPath("/index"))
 
@@ -30,7 +32,7 @@ def relative_path(
 
     This function doesn't care about whether folders should get ``/index`` added to their path.
     In fact, it doesn't understand folders.
-    It expects to the path to include ``index`` when current or target are a collection of some kind.
+    It expects the path to include ``index`` when the current or target is a collection of some kind.
 
     Policies handled before this is called:
 
@@ -178,3 +180,35 @@ def relative(
         )
         value = value / normalized_target
     return value
+
+
+def relative_tree(target_node: Node, current: PurePosixPath) -> None:
+    """Rewrite certain URL-bearing attributes in a tdom tree relative to current.
+
+    Acts on these cases:
+    - In the <head>, for any <link> element with an ``href`` attribute,
+      replace its value with a path made relative to ``current`` using ``relative``.
+
+    This function mutates the provided tree in-place and returns nothing.
+    """
+
+    def walk(node: object, in_head: bool = False) -> None:
+        # Detect an element-like node by duck-typing the attributes we need
+        tag = getattr(node, "tag", None)
+        attrs = getattr(node, "attrs", None)
+
+        now_in_head = in_head or (tag == "head")
+
+        if now_in_head and tag == "link" and isinstance(attrs, dict):
+            href = attrs.get("href")
+            if isinstance(href, str) and href.startswith("/"):
+                # Compute relative path string and assign back
+                attrs["href"] = str(relative(current=current, target=href))
+
+        # Recurse into children if present
+        children = getattr(node, "children", None)
+        if isinstance(children, (list, tuple)):
+            for ch in children:
+                walk(ch, now_in_head)
+
+    walk(target_node)

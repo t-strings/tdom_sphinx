@@ -84,3 +84,4 @@ class SiteConfig:
     site_title: str | None = None
     root_url: str = "/"
     copyright: str | None = None
+    make_relative: bool = True

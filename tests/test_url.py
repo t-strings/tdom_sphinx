@@ -1,8 +1,10 @@
 from pathlib import PurePosixPath
 
 import pytest
+from bs4 import BeautifulSoup
+from tdom import html
 
-from tdom_sphinx.url import normalize, relative, relative_path
+from tdom_sphinx.url import normalize, relative, relative_path, relative_tree
 
 
 def test_normalize_root_variants():
@@ -72,11 +74,11 @@ def test_relative_adds_suffix_when_provided():
 
 def test_relative_static_with_prefix_and_relative_asset():
     cur = "/a/b/c/index"
-    static_prefix = PurePosixPath("_static")
-    # Asset target should be a relative path to avoid overriding joined prefix
+    static_prefix = PurePosixPath("static")
+    # Asset target should be a relative path to avoid overriding the joined prefix
     asset = "css/site.css"
     assert relative(cur, asset, static_prefix=static_prefix) == PurePosixPath(
-        "../../../_static/css/site.css"
+        "../../../static/css/site.css"
     )
 
 
@@ -85,3 +87,21 @@ def test_relative():
     p2 = PurePosixPath("/foo/baz")
     result = relative(p1, p2)
     assert result == PurePosixPath("../../baz")
+
+
+def test_relative_tree_head_link_href_is_made_relative():
+    # Given a simple head with a link to an absolute site path
+    node = html(t"""
+<head>
+  <link rel="stylesheet" href="/static/site.css" />
+</head>
+""")
+    # When we rewrite URLs relative to the current page
+    current = PurePosixPath("/a/b/index")
+    relative_tree(node, current)
+
+    # Then the link's href should be relative to the current path
+    soup = BeautifulSoup(str(node), "html.parser")
+    link = soup.find("link")
+    assert link is not None
+    assert link.get("href") == "../../static/site.css"
