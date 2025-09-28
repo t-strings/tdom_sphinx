@@ -123,8 +123,14 @@ CommonRole = Literal[
 ]
 
 
-def get_role_for_element(element: Element) -> Optional[str]:
-    """Get the ARIA role for an element."""
+def get_role_for_element(node: Node) -> Optional[str]:
+    """Get the ARIA role for a node (only Elements can have roles)."""
+    # Only Elements can have ARIA roles
+    if not isinstance(node, Element):
+        return None
+
+    element = node
+
     # Check explicit role
     if 'role' in element.attrs:
         return element.attrs['role']
@@ -202,9 +208,9 @@ def get_by_role(container: Node, role: AriaRole, *, level: Optional[int] = None,
     """Find a single element with the specified role."""
     elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
-        raise ValueError(f"Unable to find element with role '{role}'")
+        raise ElementNotFoundError(f"Unable to find element with role '{role}'")
     if len(elements) > 1:
-        raise ValueError(f"Found multiple elements with role '{role}'")
+        raise MultipleElementsError(f"Found multiple elements with role '{role}'", count=len(elements))
     return elements[0]
 
 
@@ -218,7 +224,7 @@ def get_all_by_role(container: Node, role: AriaRole, *, level: Optional[int] = N
     """Find all elements with the specified role, raise error if none found."""
     elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
-        raise ValueError(f"Unable to find elements with role '{role}'")
+        raise ElementNotFoundError(f"Unable to find elements with role '{role}'")
     return elements
 
 
@@ -243,9 +249,9 @@ def get_by_text(container: Node, text: str) -> Element:
     """Find a single element containing the specified text."""
     elements = query_all_by_text(container, text)
     if not elements:
-        raise ValueError(f"Unable to find element with text: {text}")
+        raise ElementNotFoundError(f"Unable to find element with text: {text}")
     if len(elements) > 1:
-        raise ValueError(f"Found multiple elements with text: {text}")
+        raise MultipleElementsError(f"Found multiple elements with text: {text}", count=len(elements))
     return elements[0]
 
 
@@ -259,7 +265,7 @@ def get_all_by_text(container: Node, text: str) -> List[Element]:
     """Find all elements containing the specified text, raise error if none found."""
     elements = query_all_by_text(container, text)
     if not elements:
-        raise ValueError(f"Unable to find elements with text: {text}")
+        raise ElementNotFoundError(f"Unable to find elements with text: {text}")
     return elements
 
 

@@ -5,6 +5,7 @@ Tests for aria_testing.utils module.
 import re
 
 from tdom import Comment, Element, Fragment, Text
+from tdom.processor import html
 
 from tdom_sphinx.aria_testing.utils import (
     find_elements_by_tag,
@@ -21,35 +22,22 @@ def test_get_text_content_text_node():
 
 
 def test_get_text_content_element_with_text_child():
-    element = Element("p", children=[Text("Hello world")])
+    element = html(t"<p>Hello world</p>")
     assert get_text_content(element) == "Hello world"
 
 
 def test_get_text_content_element_with_multiple_text_children():
-    element = Element("p", children=[Text("Hello "), Text("world")])
+    element = html(t"<p>Hello world</p>")
     assert get_text_content(element) == "Hello world"
 
 
 def test_get_text_content_nested_elements():
-    element = Element(
-        "div",
-        children=[
-            Text("Start "),
-            Element("span", children=[Text("middle")]),
-            Text(" end"),
-        ],
-    )
+    element = html(t"<div>Start <span>middle</span> end</div>")
     assert get_text_content(element) == "Start middle end"
 
 
 def test_get_text_content_fragment():
-    fragment = Fragment(
-        children=[
-            Text("First "),
-            Element("strong", children=[Text("bold")]),
-            Text(" last"),
-        ]
-    )
+    fragment = html(t"First <strong>bold</strong> last")
     assert get_text_content(fragment) == "First bold last"
 
 
@@ -59,7 +47,7 @@ def test_get_text_content_comment_node():
 
 
 def test_get_text_content_empty_element():
-    element = Element("div")
+    element = html(t"<div></div>")
     assert get_text_content(element) == ""
 
 
@@ -117,38 +105,31 @@ def test_matches_text_normalization():
 
 
 def test_find_elements_by_tag_basic():
-    container = Element(
-        "div", children=[Element("button"), Element("input"), Element("button")]
-    )
+    container = html(t"<div><button>A</button><input /><button>B</button></div>")
 
     results = find_elements_by_tag(container, "button")
     assert len(results) == 2
 
 
 def test_find_elements_by_tag_case_insensitive():
-    container = Element("div", children=[Element("BUTTON"), Element("button")])
+    container = html(t"<div><BUTTON>A</BUTTON><button>B</button></div>")
 
     results = find_elements_by_tag(container, "button")
     assert len(results) == 2
 
 
 def test_find_elements_by_tag_nested():
-    container = Element(
-        "div",
-        children=[
-            Element("section", children=[Element("p", children=[Text("Hello")])]),
-            Element("p", children=[Text("World")]),
-        ],
-    )
+    container = html(t"""<div>
+        <section><p>Hello</p></section>
+        <p>World</p>
+    </div>""")
 
     results = find_elements_by_tag(container, "p")
     assert len(results) == 2
 
 
 def test_get_all_elements_simple():
-    container = Element(
-        "div", children=[Element("p"), Element("span"), Text("some text")]
-    )
+    container = html(t"<div><p>Para</p><span>Span</span>some text</div>")
 
     results = get_all_elements(container)
     assert len(results) == 3  # div, p, span (Text is not an Element)
@@ -158,25 +139,19 @@ def test_get_all_elements_simple():
 
 
 def test_get_all_elements_nested():
-    container = Element(
-        "div",
-        children=[
-            Element(
-                "section",
-                children=[
-                    Element("h1"),
-                    Element("p", children=[Element("strong")]),
-                ],
-            )
-        ],
-    )
+    container = html(t"""<div>
+        <section>
+            <h1>Title</h1>
+            <p><strong>Bold</strong></p>
+        </section>
+    </div>""")
 
     results = get_all_elements(container)
     assert len(results) == 5  # div, section, h1, p, strong
 
 
 def test_get_all_elements_fragment():
-    fragment = Fragment(children=[Element("div"), Element("span")])
+    fragment = html(t"<div>First</div><span>Second</span>")
 
     results = get_all_elements(fragment)
     assert len(results) == 2
