@@ -33,16 +33,11 @@ def Header(
         links = navbar.links or ()
         buttons = navbar.buttons or ()
 
-    # Support both typed PageContext and dict-style contexts for pathto
-    pathto = getattr(page_context, "pathto", None) or (
-        page_context.get("pathto") if isinstance(page_context, dict) else None
-    )
-
     return html(
         t"""
 <header class="is-fixed container">
   <nav>
-    <{NavbarBrand} pathto={pathto} href={brand_href} title={brand_title} />
+    <{NavbarBrand} page_context={page_context} href={brand_href} title={brand_title} />
     <{NavbarLinks} page_context={page_context} links={links} buttons={buttons} />
   </nav>
 </header>
