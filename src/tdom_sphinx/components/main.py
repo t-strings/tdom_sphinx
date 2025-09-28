@@ -11,13 +11,7 @@ def Main(*, page_context: PageContext) -> Node:
     Sphinx in page_context['body'].
     The body is wrapped in Markup to avoid escaping.
     """
-    body = getattr(page_context, "body", None)
-    if body is None and isinstance(page_context, dict):
-        body = page_context.get("body", "")
-    if body is None:
-        body = ""
-
-    safe_body = Markup(body)
+    safe_body = Markup(page_context.body)
 
     return html(
         t"""

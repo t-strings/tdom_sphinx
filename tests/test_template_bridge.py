@@ -38,7 +38,7 @@ def test_deep_static_nesting(sphinx_context: dict) -> None:
         sourcename=None,
         templatename="page.html",
         title="My Test Page",
-        toc="",
+        toc=None,
     )
     sphinx_context["page_context"] = page_context
 

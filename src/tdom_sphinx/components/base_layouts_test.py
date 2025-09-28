@@ -96,7 +96,7 @@ def test_base_layout_body_content_extraction(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
@@ -127,7 +127,7 @@ def test_base_layout_no_body_content(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
@@ -152,7 +152,7 @@ def test_base_layout_no_sphinx_context(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
@@ -181,7 +181,7 @@ def test_base_layout_complex_context(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
 
     result = html(
@@ -215,7 +215,7 @@ def test_base_layout_html_escaping(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
@@ -243,7 +243,7 @@ def test_base_layout_static_asset_paths(
         page_source_suffix=".rst",
         sourcename=None,
         templatename="page.html",
-        toc="",
+        toc=None,
     )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")

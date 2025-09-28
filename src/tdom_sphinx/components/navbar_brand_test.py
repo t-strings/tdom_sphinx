@@ -25,4 +25,4 @@ def test_navbar_brand_renders_brand_link_and_title(page_context):
 
     strong_element: Optional[Tag] = a_element.select_one("strong")
     assert strong_element is not None
-    assert strong_element.text == "My Site"
+    assert strong_element.get_text(strip=True) == "My Site"

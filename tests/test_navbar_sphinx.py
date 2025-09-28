@@ -1,7 +1,8 @@
 """Integration test that verifies navbar links/buttons appears in built HTML."""
 
 import pytest
-from bs4 import BeautifulSoup
+from typing import Optional
+from bs4 import BeautifulSoup, Tag
 
 pytestmark = pytest.mark.sphinx("html", testroot="navbar-sphinx")
 
@@ -21,7 +22,7 @@ def test_navbar_links_and_buttons_render(page: str) -> None:
     assert stylesheets["href"] == "_static/tdom-sphinx.css"
 
     # Find the nav inside the header
-    nav = soup.select_one("header nav")
+    nav: Optional[Tag] = soup.select_one("header nav")
     assert nav is not None
 
     # The first two links should be the text links
@@ -31,24 +32,26 @@ def test_navbar_links_and_buttons_render(page: str) -> None:
 
     # Text links (now relative to the current page without .html)
     assert a_tags[0].get("href") == "docs.html"
-    assert a_tags[0].text.strip() == "Docs"
+    assert a_tags[0].get_text(strip=True) == "Docs"
 
     assert a_tags[1].get("href") == "about.html"
-    assert a_tags[1].text.strip() == "About"
+    assert a_tags[1].get_text(strip=True) == "About"
 
     # Icon buttons
     assert a_tags[2].get("href") == "https://github.com/org"
-    assert a_tags[2].select_one("i") is not None
+    icon_2: Optional[Tag] = a_tags[2].select_one("i")
+    assert icon_2 is not None
 
     assert a_tags[3].get("href") == "https://x.com/org"
-    assert a_tags[3].select_one("i") is not None
+    icon_3: Optional[Tag] = a_tags[3].select_one("i")
+    assert icon_3 is not None
 
     # Check that the site aside contains semantic navigation
-    site_aside = soup.select_one("aside#site-aside")
+    site_aside: Optional[Tag] = soup.select_one("aside#site-aside")
     assert site_aside is not None
 
     # Should contain semantic nav structure (if toctree has content)
-    nav_element = site_aside.select_one("nav[role='navigation'][aria-label='Table of contents']")
+    nav_element: Optional[Tag] = site_aside.select_one("nav[role='navigation'][aria-label='Table of contents']")
 
     if nav_element is not None:
         # If nav exists, check its structure
@@ -56,15 +59,15 @@ def test_navbar_links_and_buttons_render(page: str) -> None:
         assert len(all_links) >= 1
 
         # Check if there's a details structure for nested content
-        details = nav_element.select_one("details")
+        details: Optional[Tag] = nav_element.select_one("details")
         if details is not None:
             # Nested structure exists
             assert details.get("open") == "open"
-            summary_link = details.select_one("summary > a")
+            summary_link: Optional[Tag] = details.select_one("summary > a")
             assert summary_link is not None
 
             # May contain subsections
-            nested_nav = details.select_one("nav[aria-label='Subsections']")
+            nested_nav: Optional[Tag] = details.select_one("nav[aria-label='Subsections']")
             if nested_nav is not None:
                 subsection_links = nested_nav.select("a")
                 assert len(subsection_links) >= 0
@@ -88,11 +91,11 @@ def test_site_aside_lower_page(page: str) -> None:
     soup = BeautifulSoup(page, "html.parser")
 
     # Check that the site aside contains semantic navigation
-    site_aside = soup.select_one("aside#site-aside")
+    site_aside: Optional[Tag] = soup.select_one("aside#site-aside")
     assert site_aside is not None
 
     # Should contain semantic nav structure
-    nav_element = site_aside.select_one("nav[role='navigation'][aria-label='Table of contents']")
+    nav_element: Optional[Tag] = site_aside.select_one("nav[role='navigation'][aria-label='Table of contents']")
     assert nav_element is not None
 
     # For lower pages, check if there are direct links or details structure

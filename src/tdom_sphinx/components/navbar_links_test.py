@@ -34,14 +34,16 @@ def test_navbar_links_renders_links_and_buttons(page_context):
 
     # Check text links
     assert a_tags[0].get("href") == "docs"
-    assert a_tags[0].text == "Docs"
+    assert a_tags[0].get_text(strip=True) == "Docs"
 
     assert a_tags[1].get("href") == "about"
-    assert a_tags[1].text == "About"
+    assert a_tags[1].get_text(strip=True) == "About"
 
     # Check buttons have icons
     assert a_tags[2].get("href") == "https://github.com/org"
-    assert a_tags[2].select_one("i") is not None
+    icon_2: Optional[Tag] = a_tags[2].select_one("i")
+    assert icon_2 is not None
 
     assert a_tags[3].get("href") == "https://x.com/org"
-    assert a_tags[3].select_one("i") is not None
+    icon_3: Optional[Tag] = a_tags[3].select_one("i")
+    assert icon_3 is not None
