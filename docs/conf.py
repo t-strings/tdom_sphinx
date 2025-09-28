@@ -44,6 +44,9 @@ myst_enable_extensions = [
 # Our package registers the theme name as "tdom-theme"
 html_theme = "tdom-theme"
 
+# Path to static files
+html_static_path = ["_static"]
+
 # Keep warnings strict-ish for docs without blocking local work
 suppress_warnings = [
     # Avoid noise if no _static/_templates
