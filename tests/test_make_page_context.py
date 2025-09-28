@@ -7,15 +7,11 @@ from tdom_sphinx.sphinx_events import make_page_context
 
 def test_make_page_context_builds_expected_page_context():
     # Arrange: minimal Sphinx-like context inputs
-    def pathto(filename: str, flag: int = 0) -> str:  # noqa: ARG001
-        return f"/{filename}.html"
-
     context = {
         "body": "<p>Hello Body</p>",
         "metatags": "<meta charset=\"utf-8\">",
         "next": {"title": "Next Page"},
         "page_source_suffix": ".rst",
-        "pathto": pathto,
         "prev": {"title": "Previous Page"},
         "sourcename": "index.rst",
         "title": "My Title",
@@ -77,8 +73,6 @@ def test_make_page_context_builds_expected_page_context():
     assert rl0.title == "General Index"
     assert rl0.accesskey == "I"
 
-    # pathto passthrough
-    assert page_ctx.pathto("about", 0) == "/about.html"
 
     # document metadata passthrough
     assert page_ctx.meta == document_metadata

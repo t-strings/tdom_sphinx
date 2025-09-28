@@ -36,3 +36,10 @@ uv run sphinx-build -b html docs docs/_build/html
 ```
 
 Open `docs/_build/html/index.html` in your browser.
+
+
+```{toctree}
+---
+---
+examples/components/hello
+```

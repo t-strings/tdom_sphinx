@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Protocol
+from typing import Iterable, List, Protocol
 
 
 class _FunctionView(Protocol):
@@ -35,12 +35,6 @@ class PageContext:
     js_files: Iterable
     pagename: str
     page_source_suffix: str
-    pathto: Callable[
-        [
-            str,
-        ],
-        str,
-    ]
     sourcename: str | None
     templatename: str
     title: str

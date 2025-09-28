@@ -6,6 +6,8 @@ import os
 import sys
 from datetime import datetime
 
+from tdom_sphinx.models import SiteConfig, NavbarConfig, Link, IconLink
+
 # -- Path setup --------------------------------------------------------------
 # Add project root to sys.path if extensions or autodoc were needed later.
 ROOT = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -49,3 +51,21 @@ suppress_warnings = [
 ]
 
 pygments_style = "sphinx"
+
+# -- Configure tdom theme
+site_config = SiteConfig(
+    root_url="/index.html",
+    navbar=NavbarConfig(
+        links=[
+            Link(href="/examples/components/hello.html", style="", text="Components"),
+        ],
+        buttons=[
+            IconLink(
+                href="https://github.com/org", color="#000", icon_class="fa fa-github"
+            ),
+            IconLink(
+                href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"
+            ),
+        ],
+    ),
+)

@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 from tdom import html
 
-from conftest import pathto
 from tdom_sphinx.components.base_layout import BaseLayout
 from tdom_sphinx.models import PageContext, SiteConfig
 
@@ -87,7 +86,6 @@ def test_base_layout_body_content_extraction(
     local = PageContext(
         title="My Test Page",
         body="<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),
@@ -119,7 +117,6 @@ def test_base_layout_no_body_content(
     local = PageContext(
         title="No Body Test",
         body="<p>Hello World</p>",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),
@@ -145,7 +142,6 @@ def test_base_layout_no_sphinx_context(
     local = PageContext(
         title="No Sphinx Context",
         body="",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),
@@ -175,7 +171,6 @@ def test_base_layout_complex_context(
         title="Complex Test",
         body="<p>Main content</p>",
         pagename="index",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),
@@ -208,7 +203,6 @@ def test_base_layout_html_escaping(
     local = PageContext(
         title="My Test Page",
         body="<p>Content with <strong>bold</strong> and <em>italic</em> text</p>",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),
@@ -237,7 +231,6 @@ def test_base_layout_static_asset_paths(
     local = PageContext(
         title="Asset Path Test",
         body="",
-        pathto=pathto,
         css_files=(),
         display_toc=False,
         js_files=(),

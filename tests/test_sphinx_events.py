@@ -32,9 +32,6 @@ def test_page_context_added_to_context() -> None:
     app = SphinxTestApp(srcdir=srcdir)
 
     # Provide a minimal context expected by make_page_context
-    def pathto(filename: str, flag: int = 0) -> str:  # noqa: ARG001
-        return f"/{filename}.html"
-
     context: dict = {
         "project": "My Test Site",
         "title": "My Test Page",
@@ -42,7 +39,6 @@ def test_page_context_added_to_context() -> None:
         "toc": "",
         "page_source_suffix": ".rst",
         "sourcename": "index.rst",
-        "pathto": pathto,
     }
 
     _on_html_page_context(app, "index", "page.html", context, doctree=None)

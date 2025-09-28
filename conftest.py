@@ -68,8 +68,6 @@ def soup(page: str) -> Generator[BeautifulSoup, Any, None]:
     yield BeautifulSoup(page, "html.parser")
 
 
-def pathto(filename: str, flag: int = 0) -> str:
-    return filename
 
 
 @pytest.fixture
@@ -95,7 +93,6 @@ def page_context() -> PageContext:
         js_files=(),
         pagename="index",
         page_source_suffix=".rst",
-        pathto=pathto,
         sourcename=None,
         templatename="page.html",
         title="My Test Page",
@@ -131,6 +128,5 @@ def sphinx_context(sphinx_app: SphinxTestApp, page_context: PageContext) -> dict
         "title": page_context.title,
         "body": page_context.body,
         "sphinx_app": sphinx_app,
-        "pathto": pathto,
         "page_context": page_context,
     }

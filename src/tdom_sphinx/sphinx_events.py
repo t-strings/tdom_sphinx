@@ -49,7 +49,6 @@ def make_page_context(
         next=context.get("next"),
         page_source_suffix=context.get("page_source_suffix"),
         pagename=pagename,
-        pathto=context.get("pathto"),
         prev=context.get("prev"),
         sourcename=context.get("sourcename"),
         templatename=templatename,

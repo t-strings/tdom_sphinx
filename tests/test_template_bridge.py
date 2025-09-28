@@ -2,7 +2,6 @@
 
 from bs4 import BeautifulSoup
 
-from conftest import pathto
 from tdom_sphinx.models import PageContext
 from tdom_sphinx.template_bridge import TdomBridge
 
@@ -31,7 +30,6 @@ def test_deep_static_nesting(sphinx_context: dict) -> None:
         js_files=(),
         pagename="foo/bar/baz/home.html",
         page_source_suffix=".rst",
-        pathto=pathto,
         sourcename=None,
         templatename="page.html",
         title="My Test Page",
