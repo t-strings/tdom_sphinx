@@ -65,7 +65,7 @@ def test_base_layout_body_structure(
     body = soup.find("body")
     assert body is not None
 
-    # Header component
+    # Heading component
     header = body.find("header", {"class": "is-fixed"})
     assert header is not None
 

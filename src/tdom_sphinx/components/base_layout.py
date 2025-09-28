@@ -2,8 +2,9 @@ from tdom import Node, html
 
 from tdom_sphinx.components.footer import Footer
 from tdom_sphinx.components.head import Head
-from tdom_sphinx.components.header import Header
+from tdom_sphinx.components.heading import Heading
 from tdom_sphinx.components.main import Main
+from tdom_sphinx.components.site_aside import SiteAside
 from tdom_sphinx.models import PageContext, SiteConfig
 
 
@@ -14,7 +15,7 @@ def BaseLayout(
 
     Renders a full HTML5 document using components:
     - <{Head} /> for the <head>
-    - <{Header} />, <{Main} />, <{Footer} /> inside <body>
+    - <{Heading} />, <{SiteAside} />, <{Main} />, <{Footer} /> inside <body>
     """
 
     return html(
@@ -23,7 +24,8 @@ def BaseLayout(
 <html lang=\"EN\">
 <{Head} page_context={page_context} site_config={site_config} />
 <body>
-  <{Header} page_context={page_context} site_config={site_config} />
+  <{Heading} page_context={page_context} site_config={site_config} />
+  <{SiteAside} page_context={page_context} site_config={site_config} />
   <{Main} page_context={page_context} />
   <{Footer} page_context={page_context} site_config={site_config} />
 </body>
