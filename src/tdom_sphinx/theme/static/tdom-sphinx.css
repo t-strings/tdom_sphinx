@@ -1,0 +1,51 @@
+/* CSS Grid Layout for tdom-sphinx theme */
+
+body {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "aside main"
+    "footer footer";
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Grid area assignments */
+header {
+  grid-area: header;
+}
+
+aside {
+  grid-area: aside;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-right: 1px solid #ddd;
+}
+
+main {
+  grid-area: main;
+}
+
+footer {
+  grid-area: footer;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  body {
+    grid-template-areas:
+      "header"
+      "main"
+      "aside"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto;
+  }
+
+  aside {
+    border-right: none;
+    border-top: 1px solid #ddd;
+  }
+}
