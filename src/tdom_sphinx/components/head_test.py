@@ -11,7 +11,7 @@ def test_head(page_context, site_config):
     soup = BeautifulSoup(str(result), "html.parser")
     title_element: Optional[Tag] = soup.select_one("title")
     assert title_element is not None
-    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
+    assert title_element.text == "My Test Page - My Test Site"
 
 
 def test_make_full_title_with_site_config(page_context, site_config):

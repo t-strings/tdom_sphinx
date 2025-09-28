@@ -25,7 +25,7 @@ def test_footer_contains_centered_copyright(
     # Check if the style is centered
     assert p_element.get("style") == "text-align: center"
 
-    text = p_element.get_text(strip=True)
+    text = p_element.text
     assert text.startswith("© ")
     assert str(datetime.now().year) in text
     assert "My Test Site" in text

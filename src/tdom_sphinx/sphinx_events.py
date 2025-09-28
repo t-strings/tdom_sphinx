@@ -45,15 +45,15 @@ def make_page_context(
         display_toc=display_toc,
         js_files=js_files,
         meta=document_metadata,
-        metatags=context.get("metatags"),
+        metatags=context.get("metatags", ""),
         next=context.get("next"),
-        page_source_suffix=context.get("page_source_suffix"),
+        page_source_suffix=context.get("page_source_suffix", "html"),
         pagename=pagename,
         prev=context.get("prev"),
         sourcename=context.get("sourcename"),
         templatename=templatename,
         rellinks=rellinks,
-        title=context.get("title"),
+        title=context.get("title", ""),
         toc=Markup(context.get("toc")),
         toctree=context.get("toctree"),
     )
@@ -86,7 +86,6 @@ def _on_html_page_context(
     context["page_context"] = page_ctx
 
 
-
 def _on_builder_inited(app: Sphinx) -> None:
     """Create a SiteConfig once at builder init and attach to the app.
 
@@ -112,4 +111,10 @@ def _on_builder_inited(app: Sphinx) -> None:
         copyright = sphinx_copyright
 
     # Store on the app for retrieval by the template bridge and others
-    app.site_config = SiteConfig(navbar=navbar, site_title=site_title, root_url=root_url, copyright=copyright)  # type: ignore[attr-defined]
+    setattr(
+        app,
+        "site_config",
+        SiteConfig(
+            navbar=navbar, site_title=site_title, root_url=root_url, copyright=copyright
+        ),
+    )

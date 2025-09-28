@@ -15,4 +15,4 @@ def test_main_includes_body_from_context(page_context):
 
     p_element: Optional[Tag] = main_element.select_one("p")
     assert p_element is not None
-    assert p_element.get_text(strip=True) == "Hello World"
+    assert p_element.text == "Hello World"

@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, ResultSet
 
 from tdom_sphinx.models import PageContext
 from tdom_sphinx.template_bridge import TdomBridge
@@ -15,10 +15,9 @@ def test_render_default_view(sphinx_context: dict) -> None:
     result = tb.render("some_template", sphinx_context)
     soup = BeautifulSoup(result, "html.parser")
 
-    title_element: Optional[Tag] = soup.select_one("title")
-    assert title_element is not None
-    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
-
+    element: Optional[Tag] = soup.select_one("title")
+    assert element is not None
+    assert element.get_text(strip=True) == "My Test Page - My Test Site"
     stylesheets: Optional[Tag] = soup.select_one("link[rel='stylesheet']")
     assert stylesheets is not None
     assert stylesheets["href"] == "_static/tdom-sphinx.css"
@@ -47,9 +46,10 @@ def test_deep_static_nesting(sphinx_context: dict) -> None:
     result = tb.render("some_template", sphinx_context)
     soup = BeautifulSoup(result, "html.parser")
 
-    title_element: Optional[Tag] = soup.select_one("title")
-    assert title_element is not None
-    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
+    element: Optional[Tag] = soup.select_one("title")
+    assert element is not None
+    assert element.get_text(strip=True) == "My Test Page - My Test Site"
 
-    stylesheets = soup.select("link[rel='stylesheet']")[0]
-    assert stylesheets["href"] == "../../../_static/tdom-sphinx.css"
+    stylesheets: ResultSet[Tag] = soup.select("link[rel='stylesheet']")  # noqa: F821
+    assert stylesheets
+    assert stylesheets[0]["href"] == "../../../_static/tdom-sphinx.css"

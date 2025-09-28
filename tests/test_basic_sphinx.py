@@ -15,4 +15,6 @@ pytestmark = pytest.mark.sphinx("html", testroot="basic-sphinx")
 )
 def test_index(page: str, soup: BeautifulSoup) -> None:
     """Ensure basics are in the page."""
-    assert soup.title.text == "Hello PicoCSS - tdom-sphinx"
+    title = soup.title
+    assert title is not None
+    assert title.get_text(strip=True) == "Hello PicoCSS - tdom-sphinx"

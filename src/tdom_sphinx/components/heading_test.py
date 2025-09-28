@@ -30,4 +30,4 @@ def test_heading_wraps_navbar_and_is_fixed(
 
     strong_element: Optional[Tag] = nav_element.select_one("ul:nth-of-type(1) li strong")
     assert strong_element is not None
-    assert strong_element.get_text(strip=True) == "My Test Site"
+    assert strong_element.text == "My Test Site"

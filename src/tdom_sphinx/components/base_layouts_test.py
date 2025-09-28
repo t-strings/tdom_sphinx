@@ -44,7 +44,7 @@ def test_base_layout_head_section(
     # title uses site title if present in context
     title_element: Optional[Tag] = head_element.find("title")
     assert title_element is not None
-    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
+    assert title_element.text == "My Test Page - My Test Site"
 
     # stylesheets and favicon
     css_link: Optional[Tag] = head_element.find("link", {"rel": "stylesheet"})
@@ -76,7 +76,7 @@ def test_base_layout_body_structure(
     main_element: Optional[Tag] = body_element.find("main")
     assert main_element is not None
     p_element: Optional[Tag] = main_element.find("p")
-    assert p_element is not None and p_element.get_text(strip=True) == "Hello World"
+    assert p_element is not None and p_element.text == "Hello World"
 
     # Footer component present
     footer_element: Optional[Tag] = body_element.find("footer")
@@ -105,13 +105,13 @@ def test_base_layout_body_content_extraction(
     assert main_element is not None
 
     h2_element: Optional[Tag] = main_element.find("h2")
-    assert h2_element is not None and h2_element.get_text(strip=True) == "Section Title"
+    assert h2_element is not None and h2_element.text == "Section Title"
     p_element: Optional[Tag] = main_element.find("p")
-    assert p_element is not None and p_element.get_text(strip=True) == "Paragraph content"
+    assert p_element is not None and p_element.text == "Paragraph content"
     ul_element: Optional[Tag] = main_element.find("ul")
     assert ul_element is not None
     li_element: Optional[Tag] = ul_element.find("li")
-    assert li_element is not None and li_element.get_text(strip=True) == "List item"
+    assert li_element is not None and li_element.text == "List item"
 
 
 def test_base_layout_no_body_content(
@@ -136,7 +136,7 @@ def test_base_layout_no_body_content(
     assert main_element is not None
     p_element: Optional[Tag] = main_element.find("p")
     assert p_element is not None
-    assert p_element.get_text(strip=True) == "Hello World"
+    assert p_element.text.strip() == "Hello World"
 
 
 def test_base_layout_no_sphinx_context(
@@ -160,12 +160,12 @@ def test_base_layout_no_sphinx_context(
 
     title_element: Optional[Tag] = soup.find("title")
     assert title_element is not None
-    assert title_element.get_text(strip=True) == "No Sphinx Context - My Test Site"
+    assert title_element.text == "No Sphinx Context - My Test Site"
 
     # Body is missing; Main renders empty when no body provided
     main_element: Optional[Tag] = soup.find("main")
     assert main_element is not None
-    assert main_element.get_text(strip=True) == ""
+    assert main_element.get_text().strip() == ""
 
 
 def test_base_layout_complex_context(
@@ -192,7 +192,7 @@ def test_base_layout_complex_context(
 
     title_element: Optional[Tag] = soup.find("title")
     assert title_element is not None
-    assert title_element.get_text(strip=True) == "Complex Test - My Test Site"
+    assert title_element.text == "Complex Test - My Test Site"
 
     main_element: Optional[Tag] = soup.find("main")
     assert main_element is not None
@@ -225,9 +225,9 @@ def test_base_layout_html_escaping(
     assert main_element is not None
 
     strong_element: Optional[Tag] = main_element.find("strong")
-    assert strong_element is not None and strong_element.get_text(strip=True) == "bold"
+    assert strong_element is not None and strong_element.text == "bold"
     em_element: Optional[Tag] = main_element.find("em")
-    assert em_element is not None and em_element.get_text(strip=True) == "italic"
+    assert em_element is not None and em_element.text == "italic"
 
 
 def test_base_layout_static_asset_paths(

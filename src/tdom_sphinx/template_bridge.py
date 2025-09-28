@@ -15,7 +15,7 @@ class TdomBridge(BuiltinTemplateLoader):
     def render(self, template, context: dict) -> str:
         # Expect the builder-init event to put Sphinx app into context
         sphinx_app = context.get("sphinx_app")
-        page_context: PageContext = context.get("page_context")
+        page_context: PageContext = context["page_context"]
         # Get SiteConfig from the app, created during builder-inited
         site_config: SiteConfig = getattr(sphinx_app, "site_config")
         view = DefaultView(page_context=page_context, site_config=site_config)
