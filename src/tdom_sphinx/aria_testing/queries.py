@@ -2,234 +2,264 @@
 Query functions for finding elements in tdom trees using accessibility patterns.
 """
 
-from typing import Union, Optional, Pattern
-
-from tdom import Node, Element
+from typing import List, Optional, Union, Pattern, Literal
+from tdom import Node, Element, Text, Fragment
 
 from .errors import ElementNotFoundError, MultipleElementsError
-from .utils import (
-    get_text_content,
-    matches_text,
-    find_elements_by_attribute,
-    get_all_elements,
-)
+from .utils import get_text_content, matches_text, find_elements_by_attribute
 
 
-# ARIA role mapping based on HTML specification
-# This is a simplified version - a full implementation would include all ARIA roles
-IMPLICIT_ROLES = {
-    'button': ['button'],
-    'link': ['a'],
-    'heading': ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-    'textbox': ['input[type="text"]', 'input[type="email"]', 'input[type="password"]', 'textarea'],
-    'checkbox': ['input[type="checkbox"]'],
-    'radio': ['input[type="radio"]'],
-    'listitem': ['li'],
-    'list': ['ul', 'ol'],
-    'navigation': ['nav'],
-    'main': ['main'],
-    'banner': ['header'],
-    'contentinfo': ['footer'],
-    'complementary': ['aside'],
-    'form': ['form'],
-    'img': ['img'],
-    'table': ['table'],
-    'row': ['tr'],
-    'cell': ['td', 'th'],
-    'columnheader': ['th'],
-}
+# Import from utils instead of duplicating
+from .utils import get_all_elements
 
 
-def _get_role_for_element(element: Element) -> Optional[str]:
-    """Get the ARIA role for an element, either explicit or implicit."""
-    # Check for explicit role attribute
+# ARIA Role Type Definitions
+# Based on WAI-ARIA 1.1 specification and HTML living standard
+
+# Landmark Roles - Define page structure and navigation
+LandmarkRole = Literal[
+    "banner",        # <header> (when not descendant of article/section)
+    "complementary", # <aside>
+    "contentinfo",   # <footer> (when not descendant of article/section)
+    "form",          # <form> (when has accessible name)
+    "main",          # <main>
+    "navigation",    # <nav>
+    "region",        # <section> (when has accessible name)
+    "search",        # No implicit HTML element
+]
+
+# Document Structure Roles - Organize content
+DocumentStructureRole = Literal[
+    "article",       # <article>
+    "document",      # <body>, <html>
+    "feed",          # No implicit HTML element
+    "figure",        # <figure>
+    "img",           # <img>
+    "list",          # <ul>, <ol>
+    "listitem",      # <li>
+    "math",          # <math>
+    "none",          # No implicit HTML element
+    "presentation",  # No implicit HTML element
+    "table",         # <table>
+    "rowgroup",      # <tbody>, <thead>, <tfoot>
+    "row",           # <tr>
+    "cell",          # <td>
+    "columnheader",  # <th scope="col">
+    "rowheader",     # <th scope="row">
+    "gridcell",      # No implicit HTML element
+    "heading",       # <h1>-<h6>
+    "separator",     # <hr>
+]
+
+# Widget Roles - Interactive elements
+WidgetRole = Literal[
+    "button",        # <button>, <input type="button|submit|reset">
+    "checkbox",      # <input type="checkbox">
+    "gridcell",      # No implicit HTML element
+    "link",          # <a href="...">
+    "menuitem",      # No implicit HTML element
+    "menuitemcheckbox", # No implicit HTML element
+    "menuitemradio", # No implicit HTML element
+    "option",        # <option>
+    "progressbar",   # <progress>
+    "radio",         # <input type="radio">
+    "scrollbar",     # No implicit HTML element
+    "searchbox",     # <input type="search">
+    "slider",        # <input type="range">
+    "spinbutton",    # <input type="number">
+    "switch",        # No implicit HTML element
+    "tab",           # No implicit HTML element
+    "tabpanel",      # No implicit HTML element
+    "textbox",       # <input type="text|email|password|tel|url">, <textarea>
+    "treeitem",      # No implicit HTML element
+]
+
+# Composite Widget Roles - Complex interactive elements
+CompositeWidgetRole = Literal[
+    "combobox",      # <select>, <input list="...">
+    "grid",          # No implicit HTML element
+    "listbox",       # <select multiple>
+    "menu",          # No implicit HTML element
+    "menubar",       # No implicit HTML element
+    "radiogroup",    # No implicit HTML element
+    "tablist",       # No implicit HTML element
+    "tree",          # No implicit HTML element
+    "treegrid",      # No implicit HTML element
+]
+
+# Live Region Roles - Dynamic content
+LiveRegionRole = Literal[
+    "alert",         # No implicit HTML element
+    "log",           # No implicit HTML element
+    "marquee",       # No implicit HTML element
+    "status",        # <output>
+    "timer",         # No implicit HTML element
+]
+
+# Window Roles - Application-like interfaces
+WindowRole = Literal[
+    "alertdialog",   # No implicit HTML element
+    "dialog",        # <dialog>
+]
+
+# Combined type for all ARIA roles
+AriaRole = Union[
+    LandmarkRole,
+    DocumentStructureRole,
+    WidgetRole,
+    CompositeWidgetRole,
+    LiveRegionRole,
+    WindowRole,
+]
+
+# Most commonly used roles (subset for convenience)
+CommonRole = Literal[
+    # Landmarks
+    "main", "navigation", "banner", "contentinfo", "complementary", "form",
+    # Document structure
+    "heading", "list", "listitem", "table", "row", "cell", "img",
+    # Interactive elements
+    "button", "link", "textbox", "checkbox", "radio", "combobox",
+]
+
+
+def get_role_for_element(element: Element) -> Optional[str]:
+    """Get the ARIA role for an element."""
+    # Check explicit role
     if 'role' in element.attrs:
         return element.attrs['role']
 
-    # Check for implicit roles based on tag
+    # Check implicit roles
     tag = element.tag.lower()
-    for role, tags in IMPLICIT_ROLES.items():
-        if tag in tags:
-            return role
+    role_map = {
+        'button': 'button',
+        'nav': 'navigation',
+        'main': 'main',
+        'header': 'banner',
+        'footer': 'contentinfo',
+        'aside': 'complementary',
+        'h1': 'heading', 'h2': 'heading', 'h3': 'heading',
+        'h4': 'heading', 'h5': 'heading', 'h6': 'heading',
+        'a': 'link',
+        'ul': 'list', 'ol': 'list',
+        'li': 'listitem',
+        'form': 'form',
+    }
 
-    # Special cases for input elements
+    if tag in role_map:
+        return role_map[tag]
+
+    # Special handling for input elements
     if tag == 'input':
         input_type = (element.attrs.get('type') or 'text').lower()
-        type_to_role = {
-            'button': 'button',
-            'submit': 'button',
-            'reset': 'button',
+        type_map = {
+            'text': 'textbox', 'email': 'textbox', 'password': 'textbox',
+            'number': 'spinbutton',
             'checkbox': 'checkbox',
             'radio': 'radio',
-            'text': 'textbox',
-            'email': 'textbox',
-            'password': 'textbox',
-            'search': 'searchbox',
-            'url': 'textbox',
-            'tel': 'textbox',
-            'number': 'spinbutton',
-            'range': 'slider',
+            'button': 'button', 'submit': 'button', 'reset': 'button',
         }
-        return type_to_role.get(input_type, 'textbox')
+        return type_map.get(input_type, 'textbox')
 
     return None
 
 
-def _get_accessible_name(element: Element) -> str:
-    """Get the accessible name for an element."""
-    # Check aria-label first
-    if 'aria-label' in element.attrs:
-        return element.attrs['aria-label'] or ""
-
-    # Check aria-labelledby
-    if 'aria-labelledby' in element.attrs:
-        # In a real implementation, we'd look up the referenced element
-        # For now, just return empty string
-        return ""
-
-    # For form controls, check associated label
-    if element.tag.lower() in ['input', 'textarea', 'select']:
-        # In a real implementation, we'd find the associated label element
-        # For now, just use the element's text content
-        pass
-
-    # Fall back to text content for most elements
-    return get_text_content(element)
-
-
-# Text-based queries
-def query_all_by_text(
-    container: Node,
-    text: Union[str, Pattern[str]],
-    *,
-    exact: bool = True,
-    normalize: bool = True
-) -> list[Element]:
-    """
-    Find all elements containing the specified text.
-
-    Args:
-        container: The container node to search within
-        text: Text string or regex pattern to match
-        exact: Whether to use exact matching (default) or substring matching
-        normalize: Whether to normalize whitespace before matching
-
-    Returns:
-        List of matching elements
-    """
-    # Get all elements within the container, excluding the container itself
+def query_all_by_role(container: Node, role: AriaRole, *, level: Optional[int] = None, name: Optional[str] = None) -> List[Element]:
+    """Find all elements with the specified role."""
     all_elements = get_all_elements(container)
-    # Filter out the container element if it's in the results
+    # Skip container itself if it's an element
     if isinstance(container, Element) and all_elements and all_elements[0] is container:
-        elements = all_elements[1:]  # Skip the container itself
+        elements = all_elements[1:]
     else:
         elements = all_elements
 
     results = []
-
     for element in elements:
-        element_text = get_text_content(element)
-        if matches_text(element_text, text, exact=exact, normalize=normalize):
-            results.append(element)
+        element_role = get_role_for_element(element)
+        if element_role != role:
+            continue
+
+        # Check heading level
+        if level is not None and role == 'heading':
+            if element.tag.lower() == f'h{level}':
+                pass  # Match
+            elif 'aria-level' in element.attrs:
+                try:
+                    aria_level_str = element.attrs['aria-level']
+                    if aria_level_str and int(aria_level_str) != level:
+                        continue
+                except ValueError:
+                    continue
+            else:
+                continue
+
+        results.append(element)
 
     return results
 
 
-def query_by_text(
-    container: Node,
-    text: Union[str, Pattern[str]],
-    *,
-    exact: bool = True,
-    normalize: bool = True
-) -> Optional[Element]:
-    """
-    Find a single element containing the specified text.
-
-    Args:
-        container: The container node to search within
-        text: Text string or regex pattern to match
-        exact: Whether to use exact matching (default) or substring matching
-        normalize: Whether to normalize whitespace before matching
-
-    Returns:
-        The matching element, or None if not found
-    """
-    elements = query_all_by_text(container, text, exact=exact, normalize=normalize)
-    return elements[0] if elements else None
-
-
-def get_by_text(
-    container: Node,
-    text: Union[str, Pattern[str]],
-    *,
-    exact: bool = True,
-    normalize: bool = True
-) -> Element:
-    """
-    Find a single element containing the specified text.
-    Throws an error if not found or multiple elements match.
-
-    Args:
-        container: The container node to search within
-        text: Text string or regex pattern to match
-        exact: Whether to use exact matching (default) or substring matching
-        normalize: Whether to normalize whitespace before matching
-
-    Returns:
-        The matching element
-
-    Raises:
-        ElementNotFoundError: If no matching element is found
-        MultipleElementsError: If multiple elements match
-    """
-    elements = query_all_by_text(container, text, exact=exact, normalize=normalize)
-
+def get_by_role(container: Node, role: AriaRole, *, level: Optional[int] = None, name: Optional[str] = None) -> Element:
+    """Find a single element with the specified role."""
+    elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
-        raise ElementNotFoundError(
-            f"Unable to find element with text: {text}",
-            suggestion="Try using query_by_text if the element might not exist"
-        )
-
+        raise ValueError(f"Unable to find element with role '{role}'")
     if len(elements) > 1:
-        raise MultipleElementsError(
-            f"Found multiple elements with text: {text}",
-            count=len(elements)
-        )
-
+        raise ValueError(f"Found multiple elements with role '{role}'")
     return elements[0]
 
 
-def get_all_by_text(
-    container: Node,
-    text: Union[str, Pattern[str]],
-    *,
-    exact: bool = True,
-    normalize: bool = True
-) -> list[Element]:
-    """
-    Find all elements containing the specified text.
-    Throws an error if no elements are found.
+def query_by_role(container: Node, role: AriaRole, *, level: Optional[int] = None, name: Optional[str] = None) -> Optional[Element]:
+    """Find a single element with the specified role, return None if not found."""
+    elements = query_all_by_role(container, role, level=level, name=name)
+    return elements[0] if elements else None
 
-    Args:
-        container: The container node to search within
-        text: Text string or regex pattern to match
-        exact: Whether to use exact matching (default) or substring matching
-        normalize: Whether to normalize whitespace before matching
 
-    Returns:
-        List of matching elements
-
-    Raises:
-        ElementNotFoundError: If no matching elements are found
-    """
-    elements = query_all_by_text(container, text, exact=exact, normalize=normalize)
-
+def get_all_by_role(container: Node, role: AriaRole, *, level: Optional[int] = None, name: Optional[str] = None) -> List[Element]:
+    """Find all elements with the specified role, raise error if none found."""
+    elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
-        raise ElementNotFoundError(
-            f"Unable to find elements with text: {text}",
-            suggestion="Try using query_all_by_text if the elements might not exist"
-        )
+        raise ValueError(f"Unable to find elements with role '{role}'")
+    return elements
 
+
+def query_all_by_text(container: Node, text: str) -> List[Element]:
+    """Find all elements containing the specified text."""
+    all_elements = get_all_elements(container)
+    # Skip container itself if it's an element
+    if isinstance(container, Element) and all_elements and all_elements[0] is container:
+        elements = all_elements[1:]
+    else:
+        elements = all_elements
+
+    results = []
+    for element in elements:
+        element_text = get_text_content(element)
+        if text in element_text:
+            results.append(element)
+    return results
+
+
+def get_by_text(container: Node, text: str) -> Element:
+    """Find a single element containing the specified text."""
+    elements = query_all_by_text(container, text)
+    if not elements:
+        raise ValueError(f"Unable to find element with text: {text}")
+    if len(elements) > 1:
+        raise ValueError(f"Found multiple elements with text: {text}")
+    return elements[0]
+
+
+def query_by_text(container: Node, text: str) -> Optional[Element]:
+    """Find a single element containing the specified text, return None if not found."""
+    elements = query_all_by_text(container, text)
+    return elements[0] if elements else None
+
+
+def get_all_by_text(container: Node, text: str) -> List[Element]:
+    """Find all elements containing the specified text, raise error if none found."""
+    elements = query_all_by_text(container, text)
+    if not elements:
+        raise ValueError(f"Unable to find elements with text: {text}")
     return elements
 
 
@@ -239,7 +269,7 @@ def query_all_by_test_id(
     test_id: str,
     *,
     attribute: str = "data-testid"
-) -> list[Element]:
+) -> List[Element]:
     """
     Find all elements with the specified test ID.
 
@@ -319,7 +349,7 @@ def get_all_by_test_id(
     test_id: str,
     *,
     attribute: str = "data-testid"
-) -> list[Element]:
+) -> List[Element]:
     """
     Find all elements with the specified test ID.
     Throws an error if no elements are found.
@@ -341,172 +371,6 @@ def get_all_by_test_id(
         raise ElementNotFoundError(
             f"Unable to find elements with {attribute}: {test_id}",
             suggestion="Check that the test ID is correct and elements exist"
-        )
-
-    return elements
-
-
-# Role-based queries
-def query_all_by_role(
-    container: Node,
-    role: str,
-    *,
-    name: Optional[str] = None,
-    level: Optional[int] = None
-) -> list[Element]:
-    """
-    Find all elements with the specified ARIA role.
-
-    Args:
-        container: The container node to search within
-        role: The ARIA role to match
-        name: Optional accessible name to match
-        level: Optional heading level (for heading roles)
-
-    Returns:
-        List of matching elements
-    """
-    # Get all elements within the container, excluding the container itself
-    all_elements = get_all_elements(container)
-    # Filter out the container element if it's in the results
-    if isinstance(container, Element) and all_elements and all_elements[0] is container:
-        elements = all_elements[1:]  # Skip the container itself
-    else:
-        elements = all_elements
-
-    results = []
-
-    for element in elements:
-        element_role = _get_role_for_element(element)
-        if element_role != role:
-            continue
-
-        # Check heading level if specified
-        if level is not None and role == 'heading':
-            if element.tag.lower() == f'h{level}':
-                pass  # Matches
-            elif 'aria-level' in element.attrs:
-                try:
-                    aria_level_str = element.attrs['aria-level']
-                    if aria_level_str is not None:
-                        aria_level = int(aria_level_str)
-                        if aria_level != level:
-                            continue
-                    else:
-                        continue
-                except ValueError:
-                    continue
-            else:
-                continue
-
-        # Check accessible name if specified
-        if name is not None:
-            element_name = _get_accessible_name(element)
-            if not matches_text(element_name, name, exact=False, normalize=True):
-                continue
-
-        results.append(element)
-
-    return results
-
-
-def query_by_role(
-    container: Node,
-    role: str,
-    *,
-    name: Optional[str] = None,
-    level: Optional[int] = None
-) -> Optional[Element]:
-    """
-    Find a single element with the specified ARIA role.
-
-    Args:
-        container: The container node to search within
-        role: The ARIA role to match
-        name: Optional accessible name to match
-        level: Optional heading level (for heading roles)
-
-    Returns:
-        The matching element, or None if not found
-    """
-    elements = query_all_by_role(container, role, name=name, level=level)
-    return elements[0] if elements else None
-
-
-def get_by_role(
-    container: Node,
-    role: str,
-    *,
-    name: Optional[str] = None,
-    level: Optional[int] = None
-) -> Element:
-    """
-    Find a single element with the specified ARIA role.
-    Throws an error if not found or multiple elements match.
-
-    Args:
-        container: The container node to search within
-        role: The ARIA role to match
-        name: Optional accessible name to match
-        level: Optional heading level (for heading roles)
-
-    Returns:
-        The matching element
-
-    Raises:
-        ElementNotFoundError: If no matching element is found
-        MultipleElementsError: If multiple elements match
-    """
-    elements = query_all_by_role(container, role, name=name, level=level)
-
-    if not elements:
-        name_part = f" and name '{name}'" if name else ""
-        level_part = f" and level {level}" if level else ""
-        raise ElementNotFoundError(
-            f"Unable to find element with role '{role}'{name_part}{level_part}",
-            suggestion="Check that the role and attributes are correct"
-        )
-
-    if len(elements) > 1:
-        raise MultipleElementsError(
-            f"Found multiple elements with role '{role}'",
-            count=len(elements)
-        )
-
-    return elements[0]
-
-
-def get_all_by_role(
-    container: Node,
-    role: str,
-    *,
-    name: Optional[str] = None,
-    level: Optional[int] = None
-) -> list[Element]:
-    """
-    Find all elements with the specified ARIA role.
-    Throws an error if no elements are found.
-
-    Args:
-        container: The container node to search within
-        role: The ARIA role to match
-        name: Optional accessible name to match
-        level: Optional heading level (for heading roles)
-
-    Returns:
-        List of matching elements
-
-    Raises:
-        ElementNotFoundError: If no matching elements are found
-    """
-    elements = query_all_by_role(container, role, name=name, level=level)
-
-    if not elements:
-        name_part = f" and name '{name}'" if name else ""
-        level_part = f" and level {level}" if level else ""
-        raise ElementNotFoundError(
-            f"Unable to find elements with role '{role}'{name_part}{level_part}",
-            suggestion="Check that the role and attributes are correct"
         )
 
     return elements

@@ -93,6 +93,9 @@ Components are composed hierarchically:
 
 **Component Tests**: Each component has a `*_test.py` file testing isolated functionality.
 
+**Functionality tests**. Anything that is not a component goes under `tests` using the normal pytest naming strategy
+prefix of `test_`. Always use pytest function tests, not class-based tests.
+
 **Integration Tests**: Use Sphinx's testing framework with test projects in `tests/roots/`:
 
 - `test-basic-sphinx/`: Minimal Sphinx project for basic functionality
@@ -119,6 +122,7 @@ Components are composed hierarchically:
 ### t-strings and tdom Guidelines
 
 **t-strings**:
+
 - t-string means template string (PEP 750 feature in Python 3.14)
 - A "template function" receives `string.templatelib.Template` and returns a string
 - Templates are iterables of "parts" (strings or `string.templatelib.Interpolation`)
@@ -126,6 +130,7 @@ Components are composed hierarchically:
 - Always use type hints on function arguments and return values
 
 **tdom Components**:
+
 - Components go in `components/` directory with snake_case filenames
 - Component function signatures always start with `*` to force named arguments
 - Component tests go in same directory with `_test.py` suffix
@@ -133,6 +138,7 @@ Components are composed hierarchically:
 - Look in `../tdom/docs/examples/components` for component style examples
 
 **Code Quality**:
+
 - Use ruff for linting and run after completing tasks
 - Optimize imports and remove unused imports after changes
 - Keep public API minimal and documented

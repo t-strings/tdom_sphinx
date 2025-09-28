@@ -19,6 +19,15 @@ from .queries import (
     query_by_role,
     get_all_by_role,
     query_all_by_role,
+    # Type exports
+    AriaRole,
+    LandmarkRole,
+    DocumentStructureRole,
+    WidgetRole,
+    CompositeWidgetRole,
+    LiveRegionRole,
+    WindowRole,
+    CommonRole,
 )
 from .utils import get_text_content, normalize_text
 from .errors import TestingLibraryError, ElementNotFoundError, MultipleElementsError
@@ -41,4 +50,13 @@ __all__ = [
     "TestingLibraryError",
     "ElementNotFoundError",
     "MultipleElementsError",
+    # Type exports
+    "AriaRole",
+    "LandmarkRole",
+    "DocumentStructureRole",
+    "WidgetRole",
+    "CompositeWidgetRole",
+    "LiveRegionRole",
+    "WindowRole",
+    "CommonRole",
 ]

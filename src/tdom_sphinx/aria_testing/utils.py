@@ -29,6 +29,8 @@ def get_text_content(node: Node) -> str:
         return ""
 
 
+
+
 def normalize_text(text: str, *, collapse_whitespace: bool = True, trim: bool = True) -> str:
     """
     Normalize text for matching purposes.
@@ -173,3 +175,5 @@ def get_all_elements(container: Node) -> list[Element]:
 
     traverse(container)
     return results
+
+
