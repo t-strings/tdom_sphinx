@@ -9,7 +9,7 @@ def test_make_page_context_builds_expected_page_context():
     # Arrange: minimal Sphinx-like context inputs
     context = {
         "body": "<p>Hello Body</p>",
-        "metatags": "<meta charset=\"utf-8\">",
+        "metatags": '<meta charset="utf-8">',
         "next": {"title": "Next Page"},
         "page_source_suffix": ".rst",
         "prev": {"title": "Previous Page"},
@@ -35,7 +35,7 @@ def test_make_page_context_builds_expected_page_context():
     document_metadata = {"author": "Alice"}
 
     # Act
-    page_ctx = make_page_context(
+    page_context = make_page_context(
         context=context,
         pagename=pagename,
         templatename=templatename,
@@ -44,35 +44,36 @@ def test_make_page_context_builds_expected_page_context():
     )
 
     # Assert: selected fields are correctly transformed/preserved
-    assert isinstance(page_ctx.body, Markup)
-    assert "Hello Body" in str(page_ctx.body)
+    assert isinstance(page_context.body, Markup)
+    assert "Hello Body" in str(page_context.body)
 
-    assert page_ctx.templatename == templatename
-    assert page_ctx.pagename == pagename
-    assert page_ctx.page_source_suffix == ".rst"
-    assert page_ctx.sourcename == "index.rst"
-    assert page_ctx.title == "My Title"
+    assert page_context.templatename == templatename
+    assert page_context.pagename == pagename
+    assert page_context.page_source_suffix == ".rst"
+    assert page_context.sourcename == "index.rst"
+    assert page_context.title == "My Title"
 
     # toc and metatags
-    assert isinstance(page_ctx.toc, Markup)
-    assert "Item" in str(page_ctx.toc)
-    assert page_ctx.metatags == "<meta charset=\"utf-8\">"
+    assert isinstance(page_context.toc, Markup)
+    assert "Item" in str(page_context.toc)
+    assert page_context.metatags == '<meta charset="utf-8">'
 
     # css/js become tuples; js currently mirrors css per implementation
-    assert page_ctx.css_files == tuple(context["css_files"])  # type: ignore[comparison-overlap]
-    assert page_ctx.js_files == tuple(context["css_files"])  # mirrors css_files in current code
+    assert page_context.css_files == tuple(context["css_files"])  # type: ignore[comparison-overlap]
+    assert page_context.js_files == tuple(
+        context["css_files"]
+    )  # mirrors css_files in current code
 
     # display_toc is True due to toc_num_entries["pagename"] > 1
-    assert page_ctx.display_toc is True
+    assert page_context.display_toc is True
 
     # rellinks are mapped into Rellink dataclasses
-    assert len(page_ctx.rellinks) == 2
-    rl0 = page_ctx.rellinks[0]
+    assert len(page_context.rellinks) == 2
+    rl0 = page_context.rellinks[0]
     assert rl0.pagename == "genindex"
     assert rl0.link_text == "index"
     assert rl0.title == "General Index"
     assert rl0.accesskey == "I"
 
-
     # document metadata passthrough
-    assert page_ctx.meta == document_metadata
+    assert page_context.meta == document_metadata

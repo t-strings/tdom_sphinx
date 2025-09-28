@@ -45,7 +45,7 @@ class PageContext:
     next: object | None = None
     parents: object = None
     prev: object | None = None
-    rellinks: object = None
+    rellinks: tuple = tuple()
     toctree: object | None = None
 
 

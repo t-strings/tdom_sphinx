@@ -1,6 +1,8 @@
 """Ensure the Sphinx Template Bridge is replaced and uses the container."""
 
-from bs4 import BeautifulSoup
+from typing import Optional
+
+from bs4 import BeautifulSoup, Tag
 
 from tdom_sphinx.models import PageContext
 from tdom_sphinx.template_bridge import TdomBridge
@@ -12,9 +14,13 @@ def test_render_default_view(sphinx_context: dict) -> None:
     tb = TdomBridge()
     result = tb.render("some_template", sphinx_context)
     soup = BeautifulSoup(result, "html.parser")
-    assert soup.select_one("title").text == "My Test Page - My Test Site"
 
-    stylesheets = soup.select_one("link[rel='stylesheet']")
+    title_element: Optional[Tag] = soup.select_one("title")
+    assert title_element is not None
+    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
+
+    stylesheets: Optional[Tag] = soup.select_one("link[rel='stylesheet']")
+    assert stylesheets is not None
     assert stylesheets["href"] == "_static/tdom-sphinx.css"
 
 
@@ -40,7 +46,10 @@ def test_deep_static_nesting(sphinx_context: dict) -> None:
     tb = TdomBridge()
     result = tb.render("some_template", sphinx_context)
     soup = BeautifulSoup(result, "html.parser")
-    assert soup.select_one("title").text == "My Test Page - My Test Site"
+
+    title_element: Optional[Tag] = soup.select_one("title")
+    assert title_element is not None
+    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
 
     stylesheets = soup.select("link[rel='stylesheet']")[0]
     assert stylesheets["href"] == "../../../_static/tdom-sphinx.css"

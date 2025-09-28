@@ -1,4 +1,6 @@
-from bs4 import BeautifulSoup
+from typing import Optional
+
+from bs4 import BeautifulSoup, Tag
 from tdom import html
 
 from tdom_sphinx.components.navbar_links import NavbarLinks
@@ -23,19 +25,19 @@ def test_navbar_links_renders_links_and_buttons(page_context):
 
     soup = BeautifulSoup(str(result), "html.parser")
 
-    ul = soup.select_one("ul")
-    assert ul is not None
+    ul_element: Optional[Tag] = soup.select_one("ul")
+    assert ul_element is not None
 
-    a_tags = ul.select("li a")
+    a_tags = ul_element.select("li a")
     # 2 text links + 2 button links
     assert len(a_tags) == 4
 
     # Check text links
     assert a_tags[0].get("href") == "docs"
-    assert a_tags[0].text == "Docs"
+    assert a_tags[0].get_text(strip=True) == "Docs"
 
     assert a_tags[1].get("href") == "about"
-    assert a_tags[1].text == "About"
+    assert a_tags[1].get_text(strip=True) == "About"
 
     # Check buttons have icons
     assert a_tags[2].get("href") == "https://github.com/org"

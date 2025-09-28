@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from tdom import html
 
 from tdom_sphinx.components.footer import Footer
@@ -16,15 +17,15 @@ def test_footer_contains_centered_copyright(
 
     soup = BeautifulSoup(str(result), "html.parser")
 
-    footer = soup.select_one("footer")
-    assert footer is not None
+    footer_element: Optional[Tag] = soup.select_one("footer")
+    assert footer_element is not None
 
-    p = footer.select_one("p")
-    assert p is not None
+    p_element: Optional[Tag] = footer_element.select_one("p")
+    assert p_element is not None
     # Check if the style is centered
-    assert p.get("style") == "text-align: center"
+    assert p_element.get("style") == "text-align: center"
 
-    text = p.text.strip()
+    text = p_element.get_text(strip=True)
     assert text.startswith("© ")
     assert str(datetime.now().year) in text
     assert "My Test Site" in text
