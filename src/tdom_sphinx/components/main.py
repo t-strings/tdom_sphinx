@@ -21,7 +21,7 @@ def Main(*, page_context: PageContext) -> Node:
 
     return html(
         t"""
-<main class="container">
+<main>
   {safe_body}
 </main>
 """

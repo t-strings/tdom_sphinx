@@ -42,3 +42,52 @@ def test_navbar_links_and_buttons_render(page: str) -> None:
 
     assert a_tags[3].get("href") == "https://x.com/org"
     assert a_tags[3].select_one("i") is not None
+
+    # Check that the site aside contains the Sphinx toctree
+    site_aside = soup.select_one("aside#site-aside")
+    assert site_aside is not None
+
+    # Check that the aside contains toctree links
+    toctree_links = site_aside.select("a")
+    assert len(toctree_links) == 1
+
+    # Verify that the toctree contains expected content
+    # The toctree shows the local navigation for the current page
+    link_texts = [link.text.strip() for link in toctree_links]
+    link_hrefs = [link.get("href") for link in toctree_links]
+
+    # Should contain the main page link (root page title)
+    assert link_texts[0] == "Navbar Sphinx Root"
+
+    # Should contain fragment links (# for current page)
+    assert "#" in link_hrefs
+
+
+@pytest.mark.parametrize(
+    "page",
+    [
+        "hello.html",
+    ],
+    indirect=True,
+)
+def test_site_aside_lower_page(page: str) -> None:
+    soup = BeautifulSoup(page, "html.parser")
+
+    # Check that the site aside contains the Sphinx toctree
+    site_aside = soup.select_one("aside#site-aside")
+    assert site_aside is not None
+
+    # Check that the aside contains toctree links
+    toctree_links = site_aside.select("a")
+    assert len(toctree_links) == 1
+
+    # Verify that the toctree contains expected content
+    # The toctree shows the local navigation for the current page
+    link_texts = [link.text.strip() for link in toctree_links]
+    link_hrefs = [link.get("href") for link in toctree_links]
+
+    # Should contain the main page link (root page title)
+    assert link_texts[0] == "Another Page"
+
+    # Should contain fragment links (# for current page)
+    assert "#" in link_hrefs
