@@ -5,7 +5,7 @@ from tdom_sphinx.components.navbar_links import NavbarLinks
 from tdom_sphinx.models import Link, IconLink
 
 
-def test_navbar_links_renders_links_and_buttons():
+def test_navbar_links_renders_links_and_buttons(page_context):
     links = [
         Link(href="/docs", style="", text="Docs"),
         Link(href="/about", style="btn", text="About"),
@@ -15,12 +15,9 @@ def test_navbar_links_renders_links_and_buttons():
         IconLink(href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"),
     ]
 
-    def pathto(filename: str, flag: int = 0) -> str:
-        return filename
-
     result = html(
         t"""
-        <{NavbarLinks} pathto={pathto} links={links} buttons={buttons} />
+        <{NavbarLinks} page_context={page_context} links={links} buttons={buttons} />
         """
     )
 
@@ -34,10 +31,10 @@ def test_navbar_links_renders_links_and_buttons():
     assert len(a_tags) == 4
 
     # Check text links
-    assert a_tags[0].get("href") == "/docs"
+    assert a_tags[0].get("href") == "docs"
     assert a_tags[0].text == "Docs"
 
-    assert a_tags[1].get("href") == "/about"
+    assert a_tags[1].get("href") == "about"
     assert a_tags[1].text == "About"
 
     # Check buttons have icons

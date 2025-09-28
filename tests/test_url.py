@@ -105,3 +105,39 @@ def test_relative_tree_head_link_href_is_made_relative():
     link = soup.find("link")
     assert link is not None
     assert link.get("href") == "../../static/site.css"
+
+
+def test_relative_tree_body_anchor_href_is_made_relative():
+    # Given a simple body with an anchor to an absolute site path
+    node = html(t"""
+<body>
+  <a href="/docs.html">Docs</a>
+</body>
+""")
+    current = PurePosixPath("/index")
+    relative_tree(node, current)
+
+    soup = BeautifulSoup(str(node), "html.parser")
+    a = soup.find("a")
+    assert a is not None
+    assert a.get("href") == "docs.html"
+
+
+def test_relative_tree_body_anchor_ignores_non_absolute_and_external():
+    node = html(t"""
+<body>
+  <a href="foo.html">Local Relative</a>
+  <a href="./bar.html">Dot Relative</a>
+  <a href="https://example.com">External</a>
+</body>
+""")
+    current = PurePosixPath("/a/b/index")
+    relative_tree(node, current)
+
+    soup = BeautifulSoup(str(node), "html.parser")
+    a_tags = soup.find_all("a")
+    assert [a.get("href") for a in a_tags] == [
+        "foo.html",
+        "./bar.html",
+        "https://example.com",
+    ]

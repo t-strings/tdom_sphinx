@@ -16,12 +16,16 @@ from tdom_sphinx.models import Link, IconLink, NavbarConfig, SiteConfig  # noqa:
 site_config = SiteConfig(
     navbar=NavbarConfig(
         links=[
-            Link(href="/docs", style="", text="Docs"),
-            Link(href="/about", style="btn", text="About"),
+            Link(href="/docs.html", style="", text="Docs"),
+            Link(href="/about.html", style="btn", text="About"),
         ],
         buttons=[
-            IconLink(href="https://github.com/org", color="#000", icon_class="fa fa-github"),
-            IconLink(href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"),
+            IconLink(
+                href="https://github.com/org", color="#000", icon_class="fa fa-github"
+            ),
+            IconLink(
+                href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"
+            ),
         ],
     )
 )

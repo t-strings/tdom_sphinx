@@ -152,10 +152,10 @@ def relative(
     This function does those things.
 
     Args:
-        current: The resource, path, or string for source.
-        target: The resoure, path, or string for destination.
+        current: The resource, path, or string for the source.
+        target: The resource, path, or string for destination.
         static_prefix: If resolving a static asset, provide this.
-        suffix: If resolving a resource, provide file extension.
+        suffix: If resolving a resource, provide a file extension.
 
     Returns:
         The path to the target.
@@ -188,16 +188,19 @@ def relative_tree(target_node: Node, current: PurePosixPath) -> None:
     Acts on these cases:
     - In the <head>, for any <link> element with an ``href`` attribute,
       replace its value with a path made relative to ``current`` using ``relative``.
+    - In the <body>, for any <a> element with an ``href`` attribute,
+      replace its value with a path made relative to ``current`` using ``relative``.
 
     This function mutates the provided tree in-place and returns nothing.
     """
 
-    def walk(node: object, in_head: bool = False) -> None:
+    def walk(node: object, in_head: bool = False, in_body: bool = False) -> None:
         # Detect an element-like node by duck-typing the attributes we need
         tag = getattr(node, "tag", None)
         attrs = getattr(node, "attrs", None)
 
         now_in_head = in_head or (tag == "head")
+        now_in_body = in_body or (tag == "body")
 
         if now_in_head and tag == "link" and isinstance(attrs, dict):
             href = attrs.get("href")
@@ -205,10 +208,15 @@ def relative_tree(target_node: Node, current: PurePosixPath) -> None:
                 # Compute relative path string and assign back
                 attrs["href"] = str(relative(current=current, target=href))
 
+        if tag == "a" and isinstance(attrs, dict):
+            href = attrs.get("href")
+            if isinstance(href, str) and href.startswith("/"):
+                attrs["href"] = str(relative(current=current, target=href))
+
         # Recurse into children if present
         children = getattr(node, "children", None)
         if isinstance(children, (list, tuple)):
             for ch in children:
-                walk(ch, now_in_head)
+                walk(ch, now_in_head, now_in_body)
 
     walk(target_node)

@@ -1,26 +1,29 @@
-from typing import Callable, Sequence
+from typing import Sequence
 
+from pathlib import PurePosixPath
 from tdom import Node, html
 
-from tdom_sphinx.models import IconLink, Link
+from tdom_sphinx.models import IconLink, Link, PageContext
+from tdom_sphinx.url import relative_tree
 
 
 def NavbarLinks(
     *,
-    pathto: Callable[[str, int | None], str],
+    page_context: PageContext,
     links: Sequence[Link],
     buttons: Sequence[IconLink],
 ) -> Node:
     """Second <ul> of a PicoCSS navbar.
 
     Renders a list of text links followed by a list of icon buttons.
+
+    This version does not use Sphinx pathto; it renders the provided hrefs
+    as-is, then rewrites internal absolute URLs to be relative to the current
+    page by calling relative_tree on the resulting Node.
     """
-    def _resolve(href: str) -> str:
-        # Only use Sphinx pathto for internal links; preserve absolute URLs
-        return href if "://" in href else pathto(href, 0)
 
     link_nodes = [
-        html(t"""<li><a href={_resolve(l.href)} class={l.style}>{l.text}</a></li>""")
+        html(t"""<li><a href={l.href} class={l.style}>{l.text}</a></li>""")
         for l in links
     ]
 
@@ -28,7 +31,7 @@ def NavbarLinks(
         html(
             t"""
 <li>
-  <a href={_resolve(b.href)}>
+  <a href={b.href}>
     <span class="icon" style={f"color: {b.color}"}>
       <i class={b.icon_class}></i>
     </span>
@@ -41,10 +44,16 @@ def NavbarLinks(
 
     items = [*link_nodes, *button_nodes]
 
-    return html(
+    result = html(
         t"""
 <ul>
   {items}
 </ul>
 """
     )
+
+    # Make hrefs in this subtree relative to the current page
+    current = PurePosixPath("/" + page_context.pagename)
+    relative_tree(result, current)
+
+    return result

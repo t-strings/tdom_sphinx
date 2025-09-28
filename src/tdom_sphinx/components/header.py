@@ -43,7 +43,7 @@ def Header(
 <header class="is-fixed container">
   <nav>
     <{NavbarBrand} pathto={pathto} href={brand_href} title={brand_title} />
-    <{NavbarLinks} pathto={pathto} links={links} buttons={buttons} />
+    <{NavbarLinks} page_context={page_context} links={links} buttons={buttons} />
   </nav>
 </header>
 """

@@ -14,3 +14,4 @@ docs/_build
 
 .junie
 .aiassistant
+/.claude/settings.local.json

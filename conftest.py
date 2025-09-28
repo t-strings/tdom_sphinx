@@ -73,7 +73,7 @@ def pathto(filename: str, flag: int = 0) -> str:
 
 
 @pytest.fixture
-def sphinx_app() -> SphinxTestApp:
+def sphinx_app(site_config: SiteConfig) -> SphinxTestApp:
     """A Sphinx test application rooted at basic test project.
 
     Also attaches a default SiteConfig which some tests rely on.
@@ -81,7 +81,7 @@ def sphinx_app() -> SphinxTestApp:
     src_dir = Path(__file__).parent / "tests/roots/test-basic-sphinx"
     app = SphinxTestApp(srcdir=src_dir)
     # Attach a default SiteConfig used by the template bridge
-    setattr(app, "site_config", SiteConfig(site_title="My Test Site"))
+    setattr(app, "site_config", site_config)
     return app
 
 
@@ -110,8 +110,8 @@ def site_config() -> SiteConfig:
         root_url="/",
         navbar=NavbarConfig(
             links=[
-                Link(href="/docs", style="", text="Docs"),
-                Link(href="/about", style="", text="About"),
+                Link(href="/docs.html", style="", text="Docs"),
+                Link(href="/about.html", style="", text="About"),
             ],
             buttons=[
                 IconLink(

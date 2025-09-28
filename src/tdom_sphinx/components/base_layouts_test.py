@@ -84,12 +84,19 @@ def test_base_layout_body_structure(
 def test_base_layout_body_content_extraction(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    local = {
-        "title": "My Test Page",
-        "body": "<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>",
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    local = PageContext(
+        title="My Test Page",
+        body="<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
@@ -109,12 +116,19 @@ def test_base_layout_body_content_extraction(
 def test_base_layout_no_body_content(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    local = {
-        "title": "No Body Test",
-        "body": "<p>Hello World</p>",
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    local = PageContext(
+        title="No Body Test",
+        body="<p>Hello World</p>",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
@@ -128,11 +142,19 @@ def test_base_layout_no_body_content(
 def test_base_layout_no_sphinx_context(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    local = {
-        "title": "No Sphinx Context",
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    local = PageContext(
+        title="No Sphinx Context",
+        body="",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
@@ -149,17 +171,19 @@ def test_base_layout_no_sphinx_context(
 def test_base_layout_complex_context(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    page_context = {
-        "title": "Complex Test",
-        "body": "<p>Main content</p>",
-        "pagename": "index",
-        "docname": "index",
-        "other_sphinx_data": "ignored",
-        "extra_data": "should be ignored",
-        "nested": {"data": "also ignored"},
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    page_context = PageContext(
+        title="Complex Test",
+        body="<p>Main content</p>",
+        pagename="index",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
 
     result = html(
         t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
@@ -181,12 +205,19 @@ def test_base_layout_complex_context(
 def test_base_layout_html_escaping(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    local = {
-        "title": "My Test Page",
-        "body": "<p>Content with <strong>bold</strong> and <em>italic</em> text</p>",
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    local = PageContext(
+        title="My Test Page",
+        body="<p>Content with <strong>bold</strong> and <em>italic</em> text</p>",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
@@ -203,11 +234,19 @@ def test_base_layout_html_escaping(
 def test_base_layout_static_asset_paths(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    local = {
-        "title": "Asset Path Test",
-        "pathto": pathto,
-        "site_title": "My Test Site",
-    }
+    local = PageContext(
+        title="Asset Path Test",
+        body="",
+        pathto=pathto,
+        css_files=(),
+        display_toc=False,
+        js_files=(),
+        pagename="index",
+        page_source_suffix=".rst",
+        sourcename=None,
+        templatename="page.html",
+        toc="",
+    )
 
     result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")

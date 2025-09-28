@@ -1,4 +1,4 @@
-"""Integration test that verifies navbar links/buttons appear in built HTML."""
+"""Integration test that verifies navbar links/buttons appears in built HTML."""
 
 import pytest
 from bs4 import BeautifulSoup
@@ -16,20 +16,24 @@ pytestmark = pytest.mark.sphinx("html", testroot="navbar-sphinx")
 def test_navbar_links_and_buttons_render(page: str) -> None:
     soup = BeautifulSoup(page, "html.parser")
 
+    # See if relative links in the head work
+    stylesheets = soup.select("link[rel='stylesheet']")[0]
+    assert stylesheets["href"] == "_static/tdom-sphinx.css"
+
     # Find the nav inside the header
     nav = soup.select_one("header nav")
     assert nav is not None
 
-    # First two links should be the text links
+    # The first two links should be the text links
     a_tags = nav.select("ul:nth-of-type(2) li a")
     # Expect: 2 text links + 2 icon buttons
     assert len(a_tags) == 4
 
-    # Text links
-    assert a_tags[0].get("href") == "/docs.html"
+    # Text links (now relative to the current page without .html)
+    assert a_tags[0].get("href") == "docs.html"
     assert a_tags[0].text.strip() == "Docs"
 
-    assert a_tags[1].get("href") == "/about.html"
+    assert a_tags[1].get("href") == "about.html"
     assert a_tags[1].text.strip() == "About"
 
     # Icon buttons

@@ -1,0 +1,102 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Commands
+
+### Environment Setup
+```bash
+uv sync --group dev  # Install all dependencies including dev group
+```
+
+### Testing
+```bash
+uv run pytest                    # Run all tests
+uv run pytest src/              # Run component tests only
+uv run pytest tests/            # Run integration tests only
+uv run pytest -k test_name      # Run specific test
+```
+
+### Type Checking
+```bash
+uv run pyright                   # Type check the entire codebase
+```
+
+### Documentation
+```bash
+uv run docs-autobuild            # Live-reload docs server at http://127.0.0.1:8000
+uv run sphinx-build -b html docs docs/_build/html  # Build docs once
+```
+
+## Architecture Overview
+
+This project implements a Sphinx theme using `tdom` (template DOM) instead of traditional Jinja templates. The core architecture replaces Sphinx's template rendering with a component-based approach.
+
+### Key Components
+
+**Template Bridge (`template_bridge.py`)**
+- `TdomBridge` replaces Sphinx's `BuiltinTemplateLoader`
+- Renders pages using tdom views instead of Jinja templates
+- Falls back to default behavior if tdom rendering fails
+
+**Sphinx Events (`sphinx_events.py`)**
+- `_on_builder_inited`: Creates `SiteConfig` from Sphinx config at build time
+- `_on_html_page_context`: Injects Sphinx app and builds normalized `PageContext`
+- `make_page_context`: Converts raw Sphinx context to typed `PageContext` dataclass
+
+**Models (`models.py`)**
+- `PageContext`: Typed representation of per-page Sphinx data
+- `SiteConfig`: Site-wide configuration (navbar, title, etc.)
+- `Link`, `IconLink`, `NavbarConfig`: Navigation components
+
+**Views (`views.py`)**
+- `DefaultView`: Main page orchestrator that uses `BaseLayout`
+- Takes `PageContext` and `SiteConfig`, returns rendered tdom `Node`
+
+**Components (`components/`)**
+- `BaseLayout`: Main HTML5 document shell using `Head`, `Header`, `Main`, `Footer`
+- Individual components: `Head`, `Header`, `Main`, `Footer`, `NavbarBrand`, etc.
+- Each component is a function returning a tdom `Node`
+- Components use tdom's `t"""` template string syntax
+
+**URL Management (`url.py`)**
+- `relative_tree()`: Rewrites absolute URLs to relative paths in rendered HTML
+- `relative()`: Calculates relative paths between pages
+- Handles complex path resolution for multi-level site structures
+
+### Component Architecture
+
+Components follow a functional pattern:
+```python
+def ComponentName(*, page_context: PageContext, site_config: SiteConfig | None = None) -> Node:
+    return html(t"""<div>...</div>""")
+```
+
+Components are composed hierarchically:
+- `BaseLayout` → `Head` + `Header` + `Main` + `Footer`
+- `Header` → `NavbarBrand` + `NavbarLinks`
+
+### Testing Strategy
+
+**Component Tests**: Each component has a `*_test.py` file testing isolated functionality.
+
+**Integration Tests**: Use Sphinx's testing framework with test projects in `tests/roots/`:
+- `test-basic-sphinx/`: Minimal Sphinx project for basic functionality
+- `test-navbar-sphinx/`: Tests navigation features
+
+**Fixtures (`conftest.py`)**:
+- `sphinx_app`: Preconfigured SphinxTestApp with SiteConfig
+- `page_context`: Typed PageContext for component testing
+- `site_config`: Default SiteConfig with sample navigation
+- `content`: Built Sphinx app for integration testing
+- `soup`: BeautifulSoup parsing of rendered HTML
+
+### Development Notes
+
+- This project uses Python 3.14+ and `uv` for dependency management
+- Components use tdom's template string syntax (`t"""..."""`) for HTML
+- The `tdom` dependency is installed as an editable local package (`../tdom`)
+- URL rewriting happens after initial rendering via `relative_tree()`
+- The theme integrates with Sphinx via extension registration in `__init__.py`
+- Run `pytest` and `pyright` after making changes to ensure nothing breaks.
+- Run `ruff` to format code after changes.
