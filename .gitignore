@@ -10,7 +10,7 @@ wheels/
 .venv
 
 # Sphinx
-docs/_build
+_build
 
 .junie
 .aiassistant

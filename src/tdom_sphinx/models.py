@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Protocol
 
+from tdom import Node
+
 
 class _FunctionView(Protocol):
     def __call__(self, context: dict) -> str: ...
@@ -38,7 +40,7 @@ class PageContext:
     sourcename: str | None
     templatename: str
     title: str
-    toc: object
+    toc: Node | None
     builder: str = "html"
     meta: object = None
     metatags: str = ""

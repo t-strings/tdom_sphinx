@@ -1,6 +1,7 @@
 """Unit tests for make_page_context in sphinx_events.py."""
 
 from markupsafe import Markup
+from tdom.nodes import Element as TElement
 
 from tdom_sphinx.sphinx_events import make_page_context
 
@@ -53,8 +54,9 @@ def test_make_page_context_builds_expected_page_context():
     assert page_context.sourcename == "index.rst"
     assert page_context.title == "My Title"
 
-    # toc and metatags
-    assert isinstance(page_context.toc, Markup)
+    # toc is now parsed into a tdom Node and metatags remain string
+    assert isinstance(page_context.toc, TElement)
+    assert page_context.toc.tag == "ul"
     assert "Item" in str(page_context.toc)
     assert page_context.metatags == '<meta charset="utf-8">'
 

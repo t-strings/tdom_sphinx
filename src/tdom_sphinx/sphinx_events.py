@@ -11,6 +11,22 @@ from markupsafe import Markup
 from sphinx.application import Sphinx
 
 from tdom_sphinx.models import PageContext, Rellink, SiteConfig
+from tdom_sphinx.utils import html_string_to_tdom
+from tdom import Node
+
+
+def _parse_toc(toc_html: str | object | None) -> Node | None:
+    """Parse toctree HTML into a tdom Node.
+
+    Args:
+        toc_html: HTML string from Sphinx's toc context, or other object
+
+    Returns:
+        Parsed tdom Node if toc_html is a non-empty string, None otherwise
+    """
+    if isinstance(toc_html, str) and toc_html.strip():
+        return html_string_to_tdom(toc_html)
+    return None
 
 
 def make_page_context(
@@ -54,7 +70,7 @@ def make_page_context(
         templatename=templatename,
         rellinks=rellinks,
         title=context.get("title", ""),
-        toc=Markup(context.get("toc")),
+        toc=_parse_toc(context.get("toc")),
         toctree=context.get("toctree"),
     )
     return page_context

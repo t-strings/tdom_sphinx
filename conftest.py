@@ -96,7 +96,7 @@ def page_context() -> PageContext:
         sourcename=None,
         templatename="page.html",
         title="My Test Page",
-        toc="",
+        toc=None,
     )
 
 

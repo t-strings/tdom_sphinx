@@ -1,10 +1,13 @@
 Navbar Sphinx Root
 ===================
 
-Welcome to the navbar test root.
-
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Navigation
+   :hidden:
 
-   hello
+   docs
+   about
+
+Welcome to the navbar test root.
+

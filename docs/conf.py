@@ -58,6 +58,7 @@ pygments_style = "sphinx"
 # -- Configure tdom theme
 site_config = SiteConfig(
     root_url="/index.html",
+    site_title="tdom-sphinx",
     navbar=NavbarConfig(
         links=[
             Link(href="/examples/components/hello.html", style="", text="Components"),
