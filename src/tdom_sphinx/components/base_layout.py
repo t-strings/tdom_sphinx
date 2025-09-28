@@ -8,9 +8,7 @@ from tdom_sphinx.components.site_aside import SiteAside
 from tdom_sphinx.models import PageContext, SiteConfig
 
 
-def BaseLayout(
-    *, page_context: PageContext, site_config: SiteConfig | None = None
-) -> Node:
+def BaseLayout(*, page_context: PageContext, site_config: SiteConfig) -> Node:
     """Render a basic HTML document shell for Sphinx pages.
 
     Renders a full HTML5 document using components:

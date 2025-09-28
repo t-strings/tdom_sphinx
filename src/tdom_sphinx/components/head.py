@@ -1,5 +1,4 @@
 from pathlib import PurePosixPath
-from typing import Any
 
 from tdom import Node, html
 
@@ -8,27 +7,26 @@ from tdom_sphinx.url import relative_tree
 
 
 def make_full_title(
-    *, page_context: PageContext | dict[str, Any], site_config: SiteConfig | None
+    *, page_context: PageContext, site_config: SiteConfig | None
 ) -> str:
     """Return the full <title> text for a page.
 
-    - If a SiteConfig with a site_title is provided, append it with a hyphen
-      separator after the page title (e.g., "Page - Site").
-    - Page title is taken from PageContext.title or from a dict-like page_context
-      under the "title" key.
+    Gets title directly from page_context and site_title directly from site_config.
+    If site_config is provided, appends it with a hyphen separator after the page title.
     """
-    site_title = None if site_config is None else site_config.site_title
+    # Get title directly from page_context attribute
+    title = page_context.title
 
-    # Page title from PageContext or dict
-    title = getattr(page_context, "title", None)
-    if title is None and isinstance(page_context, dict):
-        title = page_context.get("title")
-
-    return f"{title}" if site_title is None else f"{title} - {site_title}"
+    # Get site_title directly from site_config attribute if provided
+    if site_config is not None:
+        site_title = site_config.site_title
+        return f"{title} - {site_title}"
+    else:
+        return f"{title}"
 
 
 def Head(*, page_context: PageContext, site_config: SiteConfig | None = None) -> Node:
-    # Support both typed PageContext and dict-style contexts
+    # Generate the full title using page context and site config
     full_title = make_full_title(page_context=page_context, site_config=site_config)
 
     result = html(t"""
