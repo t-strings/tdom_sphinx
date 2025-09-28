@@ -116,6 +116,30 @@ Components are composed hierarchically:
 - Run `pytest` and `pyright` after making changes to ensure nothing breaks.
 - Run `ruff` to format code after changes.
 
+### t-strings and tdom Guidelines
+
+**t-strings**:
+- t-string means template string (PEP 750 feature in Python 3.14)
+- A "template function" receives `string.templatelib.Template` and returns a string
+- Templates are iterables of "parts" (strings or `string.templatelib.Interpolation`)
+- Use structural pattern matching when analyzing template parts
+- Always use type hints on function arguments and return values
+
+**tdom Components**:
+- Components go in `components/` directory with snake_case filenames
+- Component function signatures always start with `*` to force named arguments
+- Component tests go in same directory with `_test.py` suffix
+- Component tests should use t-strings to generate results, then create `soup` variable with BeautifulSoup
+- Look in `../tdom/docs/examples/components` for component style examples
+
+**Code Quality**:
+- Use ruff for linting and run after completing tasks
+- Optimize imports and remove unused imports after changes
+- Keep public API minimal and documented
+- Prefer small, pure functions; avoid side effects except where needed
+- Performance matters: avoid per-render allocations in hot paths
+- Use type hints and run `pyright` when finishing tasks
+
 ### BeautifulSoup
 
 - Try to get type safety on assertions
