@@ -86,18 +86,7 @@ def sphinx_app() -> SphinxTestApp:
 
 
 @pytest.fixture
-def page_context():
-    """Default mutable, dict-style page_context used by most component tests."""
-    return {
-        "title": "My Test Page",
-        "site_title": "My Test Site",
-        "body": "<p>Hello World</p>",
-        "pathto": pathto,
-    }
-
-
-@pytest.fixture
-def page_context_typed() -> PageContext:
+def page_context() -> PageContext:
     """Typed PageContext for tests that require dataclass instance."""
     return PageContext(
         body="<p>Hello World</p>",
@@ -136,12 +125,12 @@ def site_config() -> SiteConfig:
 
 
 @pytest.fixture
-def sphinx_context(sphinx_app: SphinxTestApp, page_context_typed: PageContext) -> dict:
+def sphinx_context(sphinx_app: SphinxTestApp, page_context: PageContext) -> dict:
     return {
         "project": "My Test Site",
-        "title": page_context_typed.title,
-        "body": page_context_typed.body,
+        "title": page_context.title,
+        "body": page_context.body,
         "sphinx_app": sphinx_app,
         "pathto": pathto,
-        "page_context": page_context_typed,
+        "page_context": page_context,
     }

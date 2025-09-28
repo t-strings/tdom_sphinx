@@ -3,10 +3,15 @@ from tdom import html
 
 from conftest import pathto
 from tdom_sphinx.components.base_layout import BaseLayout
+from tdom_sphinx.models import PageContext, SiteConfig
 
 
-def test_base_layout_html5_structure(page_context) -> None:
-    result = html(t"<{BaseLayout} page_context={page_context} />")
+def test_base_layout_html5_structure(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
+    result = html(
+        t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
+    )
     html_string = str(result)
     soup = BeautifulSoup(html_string, "html.parser")
 
@@ -17,8 +22,12 @@ def test_base_layout_html5_structure(page_context) -> None:
     assert soup.find("body") is not None
 
 
-def test_base_layout_head_section(page_context) -> None:
-    result = html(t"<{BaseLayout} page_context={page_context} />")
+def test_base_layout_head_section(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
+    result = html(
+        t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
+    )
     soup = BeautifulSoup(str(result), "html.parser")
 
     head = soup.find("head")
@@ -46,8 +55,12 @@ def test_base_layout_head_section(page_context) -> None:
     assert favicon_link.get("type") == "image/x-icon"
 
 
-def test_base_layout_body_structure(page_context) -> None:
-    result = html(t"<{BaseLayout} page_context={page_context} />")
+def test_base_layout_body_structure(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
+    result = html(
+        t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
+    )
     soup = BeautifulSoup(str(result), "html.parser")
 
     body = soup.find("body")
@@ -68,14 +81,16 @@ def test_base_layout_body_structure(page_context) -> None:
     assert footer is not None
 
 
-def test_base_layout_body_content_extraction(page_context) -> None:
+def test_base_layout_body_content_extraction(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     local = {
         "title": "My Test Page",
         "body": "<div><h2>Section Title</h2><p>Paragraph content</p><ul><li>List item</li></ul></div>",
         "pathto": pathto,
         "site_title": "My Test Site",
     }
-    result = html(t"<{BaseLayout} page_context={local} />")
+    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
     main = soup.find("main")
@@ -91,14 +106,16 @@ def test_base_layout_body_content_extraction(page_context) -> None:
     assert li is not None and li.text == "List item"
 
 
-def test_base_layout_no_body_content(page_context) -> None:
+def test_base_layout_no_body_content(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     local = {
         "title": "No Body Test",
         "body": "<p>Hello World</p>",
         "pathto": pathto,
         "site_title": "My Test Site",
     }
-    result = html(t"<{BaseLayout} page_context={local} />")
+    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
     main = soup.find("main")
@@ -108,14 +125,16 @@ def test_base_layout_no_body_content(page_context) -> None:
     assert p.text.strip() == "Hello World"
 
 
-def test_base_layout_no_sphinx_context(page_context) -> None:
+def test_base_layout_no_sphinx_context(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     local = {
         "title": "No Sphinx Context",
         "pathto": pathto,
         "site_title": "My Test Site",
     }
 
-    result = html(t"<{BaseLayout} page_context={local} />")
+    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
     title_tag = soup.find("title")
@@ -127,7 +146,9 @@ def test_base_layout_no_sphinx_context(page_context) -> None:
     assert main.get_text().strip() == ""
 
 
-def test_base_layout_complex_context(page_context) -> None:
+def test_base_layout_complex_context(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     page_context = {
         "title": "Complex Test",
         "body": "<p>Main content</p>",
@@ -140,7 +161,9 @@ def test_base_layout_complex_context(page_context) -> None:
         "site_title": "My Test Site",
     }
 
-    result = html(t"<{BaseLayout} page_context={page_context} />")
+    result = html(
+        t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
+    )
     html_string = str(result)
     soup = BeautifulSoup(html_string, "html.parser")
 
@@ -155,7 +178,9 @@ def test_base_layout_complex_context(page_context) -> None:
     assert "should be ignored" not in html_string
 
 
-def test_base_layout_html_escaping(page_context) -> None:
+def test_base_layout_html_escaping(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     local = {
         "title": "My Test Page",
         "body": "<p>Content with <strong>bold</strong> and <em>italic</em> text</p>",
@@ -163,7 +188,7 @@ def test_base_layout_html_escaping(page_context) -> None:
         "site_title": "My Test Site",
     }
 
-    result = html(t"<{BaseLayout} page_context={local} />")
+    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
     main = soup.find("main")
@@ -175,14 +200,16 @@ def test_base_layout_html_escaping(page_context) -> None:
     assert em is not None and em.text == "italic"
 
 
-def test_base_layout_static_asset_paths(page_context) -> None:
+def test_base_layout_static_asset_paths(
+    page_context: PageContext, site_config: SiteConfig
+) -> None:
     local = {
         "title": "Asset Path Test",
         "pathto": pathto,
         "site_title": "My Test Site",
     }
 
-    result = html(t"<{BaseLayout} page_context={local} />")
+    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
     soup = BeautifulSoup(str(result), "html.parser")
 
     css_link = soup.find("link", {"rel": "stylesheet"})

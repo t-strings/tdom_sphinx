@@ -15,9 +15,7 @@ def test_default_view_initialization(
     assert isinstance(view, DefaultView)
 
 
-def test_default_view_call_method(
-    page_context: PageContext, site_config: SiteConfig
-):
+def test_default_view_call_method(page_context: PageContext, site_config: SiteConfig):
     """Test that DefaultView.__call__ returns a tdom Element."""
     view = DefaultView(page_context=page_context, site_config=site_config)
     result = view()

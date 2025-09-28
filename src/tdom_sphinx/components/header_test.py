@@ -2,15 +2,14 @@ from bs4 import BeautifulSoup
 from tdom import html
 
 from tdom_sphinx.components.header import Header
-from tdom_sphinx.models import NavbarConfig
+from tdom_sphinx.models import NavbarConfig, SiteConfig, PageContext
 
 
-def test_header_wraps_navbar_and_is_fixed(page_context):
-    # Provide an empty navbar to keep predictable rendering
-    navbar_cfg = NavbarConfig(links=[], buttons=[])
-
+def test_header_wraps_navbar_and_is_fixed(
+    site_config: SiteConfig, page_context: PageContext
+):
     result = html(t"""
-        <{Header} page_context={page_context} navbar={navbar_cfg} />
+        <{Header} page_context={page_context} site_config={site_config} />
     """)
 
     soup = BeautifulSoup(str(result), "html.parser")
