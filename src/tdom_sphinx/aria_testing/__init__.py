@@ -35,7 +35,7 @@ from .queries import (
     Container,
 )
 from .utils import get_text_content, normalize_text
-from .errors import TestingLibraryError, ElementNotFoundError, MultipleElementsError
+from .errors import AriaTestingLibraryError, ElementNotFoundError, MultipleElementsError
 
 __all__ = [
     "get_by_text",
@@ -56,7 +56,7 @@ __all__ = [
     "query_all_by_label_text",
     "get_text_content",
     "normalize_text",
-    "TestingLibraryError",
+    "AriaTestingLibraryError",
     "ElementNotFoundError",
     "MultipleElementsError",
     # Type exports

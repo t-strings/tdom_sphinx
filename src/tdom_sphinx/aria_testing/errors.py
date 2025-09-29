@@ -5,12 +5,13 @@ Custom exceptions for the aria_testing library.
 from typing import Optional
 
 
-class TestingLibraryError(Exception):
+class AriaTestingLibraryError(Exception):
     """Base exception for all testing library errors."""
+
     pass
 
 
-class ElementNotFoundError(TestingLibraryError):
+class ElementNotFoundError(AriaTestingLibraryError):
     """Raised when a get_by_* query fails to find any matching elements."""
 
     def __init__(self, message: str, suggestion: Optional[str] = None):
@@ -21,9 +22,11 @@ class ElementNotFoundError(TestingLibraryError):
         super().__init__(full_message)
 
 
-class MultipleElementsError(TestingLibraryError):
+class MultipleElementsError(AriaTestingLibraryError):
     """Raised when a get_by_* query finds multiple matching elements."""
 
     def __init__(self, message: str, count: int):
         self.count = count
-        super().__init__(f"{message}\n\n(Found {count} elements. If this is intentional, use query_all_by_* instead.)")
+        super().__init__(
+            f"{message}\n\n(Found {count} elements. If this is intentional, use query_all_by_* instead.)"
+        )

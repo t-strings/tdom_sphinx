@@ -5,12 +5,12 @@ Tests for aria_testing.errors module.
 from tdom_sphinx.aria_testing.errors import (
     ElementNotFoundError,
     MultipleElementsError,
-    TestingLibraryError,
+    AriaTestingLibraryError,
 )
 
 
 def test_base_exception():
-    error = TestingLibraryError("Base error")
+    error = AriaTestingLibraryError("Base error")
     assert str(error) == "Base error"
     assert isinstance(error, Exception)
 
@@ -18,7 +18,7 @@ def test_base_exception():
 def test_basic_error():
     error = ElementNotFoundError("Element not found")
     assert str(error) == "Element not found"
-    assert isinstance(error, TestingLibraryError)
+    assert isinstance(error, AriaTestingLibraryError)
 
 
 def test_error_with_suggestion():
@@ -40,7 +40,7 @@ def test_multiple_elements_error():
     expected = "Found multiple elements\n\n(Found 3 elements. If this is intentional, use query_all_by_* instead.)"
     assert str(error) == expected
     assert error.count == 3
-    assert isinstance(error, TestingLibraryError)
+    assert isinstance(error, AriaTestingLibraryError)
 
 
 def test_count_property():
