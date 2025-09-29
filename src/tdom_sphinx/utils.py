@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from html.parser import HTMLParser
-from typing import Any
 
 from tdom.nodes import Element as TElement, Fragment as TFragment, Text as TText, Node as TNode
 
@@ -21,8 +20,8 @@ class TdomHTMLParser(HTMLParser):
         # Flush any pending text content
         self._flush_text()
 
-        # Convert attrs list to dict, handling None values
-        attrs_dict = {name: value or "" for name, value in attrs}
+        # Convert attrs list to dict, normalizing None values to empty strings
+        attrs_dict: dict[str, str | None] = {name: value or "" for name, value in attrs}
 
         # Create new element
         element = TElement(tag=tag, attrs=attrs_dict, children=[])
@@ -64,13 +63,15 @@ class TdomHTMLParser(HTMLParser):
 
         self.current_text = ""
 
-    def close(self) -> TNode:
-        """Finish parsing and return the root node(s)."""
+    def close(self) -> None:
+        """Finish parsing. Result can be retrieved via get_result()."""
         # Flush any remaining text
         self._flush_text()
 
         super().close()
 
+    def get_result(self) -> TNode:
+        """Return the parsed root node(s) as a tdom Node."""
         # Return appropriate node type
         if len(self.root_nodes) == 0:
             # Empty content - return empty fragment
@@ -118,4 +119,5 @@ def html_string_to_tdom(html_string: str) -> TNode:
 
     parser = TdomHTMLParser()
     parser.feed(html_string)
-    return parser.close()
+    parser.close()
+    return parser.get_result()

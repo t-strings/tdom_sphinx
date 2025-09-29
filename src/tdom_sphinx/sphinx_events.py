@@ -5,7 +5,7 @@ Separated from package __init__ to keep responsibilities clear and ease testing.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 from markupsafe import Markup
 from sphinx.application import Sphinx
@@ -30,11 +30,11 @@ def _parse_toc(toc_html: str | object | None) -> Node | None:
 
 
 def make_page_context(
-    context: dict[str, Any],
+    context: Mapping[str, Any],
     pagename: str,
     templatename: str,
-    toc_num_entries: dict[str, int],
-    document_metadata: dict[str, object],
+    toc_num_entries: Mapping[str, int],
+    document_metadata: Mapping[str, object],
 ) -> PageContext:
     """Given some Sphinx context information, make a PageContext."""
     rellinks = tuple(

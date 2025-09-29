@@ -29,9 +29,9 @@ def get_text_content(node: Node) -> str:
         return ""
 
 
-
-
-def normalize_text(text: str, *, collapse_whitespace: bool = True, trim: bool = True) -> str:
+def normalize_text(
+    text: str, *, collapse_whitespace: bool = True, trim: bool = True
+) -> str:
     """
     Normalize text for matching purposes.
 
@@ -45,7 +45,7 @@ def normalize_text(text: str, *, collapse_whitespace: bool = True, trim: bool = 
     """
     if collapse_whitespace:
         # Replace any sequence of whitespace characters with a single space
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
     if trim:
         text = text.strip()
@@ -58,7 +58,7 @@ def matches_text(
     matcher: Union[str, Pattern[str]],
     *,
     exact: bool = True,
-    normalize: bool = True
+    normalize: bool = True,
 ) -> bool:
     """
     Check if element text matches the given matcher.
@@ -75,8 +75,10 @@ def matches_text(
     if normalize:
         element_text = normalize_text(element_text)
 
-    if hasattr(matcher, 'search') and callable(getattr(matcher, 'search')):  # It's a regex pattern
-        return bool(getattr(matcher, 'search')(element_text))
+    if hasattr(matcher, "search") and callable(
+        getattr(matcher, "search")
+    ):  # It's a regex pattern
+        return bool(getattr(matcher, "search")(element_text))
     elif isinstance(matcher, str):
         if normalize:
             matcher = normalize_text(matcher)
@@ -90,9 +92,7 @@ def matches_text(
 
 
 def find_elements_by_attribute(
-    container: Node,
-    attribute: str,
-    value: Optional[str] = None
+    container: Node, attribute: str, value: Optional[str] = None
 ) -> list[Element]:
     """
     Find all elements within container that have the specified attribute.
@@ -204,7 +204,7 @@ def get_accessible_name(element: Element, role: Optional[str] = None) -> str:
     if "aria-labelledby" in element.attrs:
         labelledby_attr = element.attrs["aria-labelledby"]
         if labelledby_attr is not None:
-            labelledby_ids = labelledby_attr.split()
+            labelledby_attr.split()
             # In a real implementation, we would traverse the DOM to find elements with these IDs
             # For now, we'll skip this complex case and fall through to other methods
             pass
@@ -269,5 +269,3 @@ def get_accessible_name(element: Element, role: Optional[str] = None) -> str:
 
     # No accessible name found
     return ""
-
-

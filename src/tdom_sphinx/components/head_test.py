@@ -1,7 +1,5 @@
 from tdom import html
 
-from tdom_sphinx.aria_testing import get_by_role
-from tdom_sphinx.aria_testing.utils import get_text_content
 from tdom_sphinx.components.head import Head, make_full_title
 
 
