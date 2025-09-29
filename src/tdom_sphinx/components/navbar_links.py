@@ -3,13 +3,13 @@ from typing import Sequence
 from pathlib import PurePosixPath
 from tdom import Node, html
 
-from tdom_sphinx.models import IconLink, Link, PageContext
+from tdom_sphinx.models import IconLink, Link
 from tdom_sphinx.url import relative_tree
 
 
 def NavbarLinks(
     *,
-    page_context: PageContext,
+    pagename: str,
     links: Sequence[Link],
     buttons: Sequence[IconLink],
 ) -> Node:
@@ -53,7 +53,7 @@ def NavbarLinks(
     )
 
     # Make hrefs in this subtree relative to the current page
-    current = PurePosixPath("/" + page_context.pagename)
+    current = PurePosixPath("/" + pagename)
     relative_tree(result, current)
 
     return result

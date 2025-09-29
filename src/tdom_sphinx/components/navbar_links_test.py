@@ -22,7 +22,7 @@ def test_navbar_links_renders_links_and_buttons(page_context):
 
     result = html(
         t"""
-        <{NavbarLinks} page_context={page_context} links={links} buttons={buttons} />
+        <{NavbarLinks} pagename={page_context.pagename} links={links} buttons={buttons} />
         """
     )
 

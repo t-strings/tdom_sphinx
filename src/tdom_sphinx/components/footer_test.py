@@ -18,7 +18,7 @@ def test_footer_contains_centered_copyright(
     footer_element = get_by_role(result, "contentinfo")
     assert footer_element.tag == "footer"
 
-    # Find the paragraph within the footer
+    # Find the paragraph within the footer.
     # Footer typically contains copyright info as text
     text = get_text_content(footer_element).strip()
     assert text.startswith("© ")

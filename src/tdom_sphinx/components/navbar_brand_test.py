@@ -8,7 +8,7 @@ from tdom_sphinx.components.navbar_brand import NavbarBrand
 def test_navbar_brand_renders_brand_link_and_title(page_context):
     result = html(
         t"""
-        <{NavbarBrand} page_context={page_context} href="/" title="My Site" />
+        <{NavbarBrand} pagename={page_context.pagename} href="/" title="My Site" />
         """
     )
 

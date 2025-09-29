@@ -31,8 +31,8 @@ def Heading(
         t"""
 <header class="is-fixed">
   <nav class="container">
-    <{NavbarBrand} page_context={page_context} href={site_config.root_url} title={site_config.site_title} />
-    <{NavbarLinks} page_context={page_context} links={links} buttons={buttons} />
+    <{NavbarBrand} pagename={page_context.pagename} href={site_config.root_url} title={site_config.site_title} />
+    <{NavbarLinks} pagename={page_context.pagename} links={links} buttons={buttons} />
   </nav>
 </header>
 """
