@@ -5,7 +5,6 @@ All query functions accept both Element and Fragment containers, allowing you to
 search within any tdom structure returned by html().
 """
 
-import re
 from typing import List, Literal, Optional, Union, Pattern
 
 from tdom import Element, Fragment, Node

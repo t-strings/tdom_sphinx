@@ -13,6 +13,7 @@ A Sphinx extension and theme that renders pages with tdom components instead of 
 - aria_testing
 - Relative URL rewriting
 - Re-parsed Sphinx toctree
+- Re-implement MarkupSafe that parses into a node tree and does the operations there
 - Hint at component replaceability
 
 ## Features
@@ -28,6 +29,46 @@ A Sphinx extension and theme that renders pages with tdom components instead of 
 - Works as both a theme and an extension: add `"tdom_sphinx"` to `extensions` to enable the Template Bridge automatically.
 - Python 3.14+ only (matches this project’s `requires-python`).
 - Utilities for interop: optional `htpy_component` decorator converts htpy components to tdom nodes for use inside t-strings.
+- **TdomSafe**: Node-tree-based MarkupSafe replacement that provides HTML escaping while preserving DOM structure.
+
+## TdomSafe - MarkupSafe for Node Trees
+
+TdomSafe provides a modern, type-safe alternative to MarkupSafe that operates on tdom node trees instead of strings. This approach offers several advantages:
+
+- **Structural Preservation**: Maintains DOM tree structure during escaping operations
+- **Type Safety**: Full type hints and static analysis support
+- **Performance**: Avoids string parsing/rebuilding cycles
+- **Composability**: Seamless integration with tdom components and t-strings
+
+### Basic Usage
+
+```python
+from tdom_sphinx.tdom_safe import escape_node, safe_node, SafeNode
+
+# Escape dangerous content
+dangerous = '<script>alert("XSS")</script>'
+safe = escape_node(dangerous)
+
+# Mark trusted content as safe
+trusted = safe_node('<em>This is safe</em>')
+
+# Automatic escaping when combining
+combined = trusted + " and " + dangerous  # Automatically escapes dangerous part
+```
+
+### MarkupSafe Compatibility
+
+Drop-in replacements for common MarkupSafe functions:
+
+```python
+from tdom_sphinx.tdom_safe import Markup, escape, escape_silent
+
+# Use exactly like MarkupSafe
+markup = Markup('<div>Safe content</div>')
+escaped = escape('<div onclick="alert()">Dangerous</div>')
+```
+
+See `src/tdom_sphinx/tdom_safe/README.md` for complete documentation and `tdom_safe_demo.py` for examples.
 
 ## Quickstart
 

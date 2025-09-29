@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import re
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from tdom import Node, Element, Fragment, Text
 

@@ -61,7 +61,8 @@ def test_sphinx_app_fixture(sphinx_app):
     """Test that sphinx_app fixture returns configured SphinxTestApp."""
     assert isinstance(sphinx_app, SphinxTestApp)
     assert hasattr(sphinx_app, "site_config")
-    assert isinstance(sphinx_app.site_config, SiteConfig)
+    site_config = getattr(sphinx_app, "site_config")
+    assert isinstance(site_config, SiteConfig)
 
     # Test that the source directory path exists and is correct
     assert sphinx_app.srcdir.exists()
@@ -83,7 +84,7 @@ def test_fixtures_integration(site_config, page_context, sphinx_app, sphinx_cont
     # Verify the integration works as expected
     assert sphinx_context["page_context"] is page_context
     assert sphinx_context["sphinx_app"] is sphinx_app
-    assert sphinx_app.site_config is site_config
+    assert getattr(sphinx_app, "site_config") is site_config
 
     # Test that the context contains all expected keys
     expected_keys = {"project", "title", "body", "sphinx_app", "page_context"}
@@ -188,8 +189,9 @@ def test_site_config_navbar_buttons(site_config):
 def test_sphinx_app_site_config_attachment(sphinx_app, site_config):
     """Test that sphinx_app has the correct site_config attached."""
     assert hasattr(sphinx_app, "site_config")
-    assert sphinx_app.site_config is site_config
-    assert sphinx_app.site_config.site_title == "My Test Site"
+    app_site_config = getattr(sphinx_app, "site_config")
+    assert app_site_config is site_config
+    assert app_site_config.site_title == "My Test Site"
 
 
 def test_content_fixture_behavior():

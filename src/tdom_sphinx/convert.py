@@ -28,7 +28,7 @@ def htpy_to_tdom(node: Union[object, Iterable[object]]) -> Element | Fragment:
     try:
         from htpy._elements import BaseElement as HBaseElement
         from htpy._fragments import Fragment as HFragment
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception:  # pragma: no cover - defensive
         HBaseElement = ()  # type: ignore[assignment]
         HFragment = ()  # type: ignore[assignment]
 

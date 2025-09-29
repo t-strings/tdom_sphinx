@@ -135,9 +135,9 @@ def toc_to_tree(toc_node: Node | None, *, hide_root: bool | None = True, site_ti
 
         if isinstance(nav_item, TElement) and nav_item.tag == "details":
             details_element = nav_item
-        elif hasattr(nav_item, 'children'):
+        elif isinstance(nav_item, (TElement, TFragment)):
             # Search for details element in the structure
-            for child in nav_item.children if hasattr(nav_item, 'children') else []:
+            for child in nav_item.children:
                 if isinstance(child, TElement) and child.tag == "details":
                     details_element = child
                     break

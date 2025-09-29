@@ -257,4 +257,4 @@ def test_site_aside_lower_page(page: str) -> None:
     link_hrefs = [link.attrs.get("href", "") for link in all_links]
 
     # Should contain some navigation relevant to the current page
-    assert "Another Page" in link_texts or any("#" in href for href in link_hrefs)
+    assert "Another Page" in link_texts or any("#" in (href or "") for href in link_hrefs)

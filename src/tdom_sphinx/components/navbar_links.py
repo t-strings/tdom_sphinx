@@ -23,8 +23,8 @@ def NavbarLinks(
     """
 
     link_nodes = [
-        html(t"""<li><a href={l.href} class={l.style}>{l.text}</a></li>""")
-        for l in links
+        html(t"""<li><a href={link.href} class={link.style}>{link.text}</a></li>""")
+        for link in links
     ]
 
     button_nodes = [
