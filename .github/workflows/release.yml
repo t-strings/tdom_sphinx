@@ -14,18 +14,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.14'
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-
-      - name: Build
-        run: uv build
+#      - name: Setup Python 3.14
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.14'
+#
+#      - name: Setup uv
+#        uses: astral-sh/setup-uv@v3
+#        with:
+#          enable-cache: true
+#
+#      - name: Build
+#        run: uv build
 
 #      - name: Publish to PyPI
 #        env:
