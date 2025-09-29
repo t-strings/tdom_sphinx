@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Demo script showcasing TdomSafe functionality."""
 
-from tdom import Element, Text, html
+from tdom import Element, Text, html, Fragment
 
 from tdom_sphinx.tdom_safe import (
     Markup,
@@ -52,7 +52,7 @@ def demo_html_string_to_tdom():
     print(f"Multi-root: {multi_root}")
     print(f"Node type: {type(node3).__name__}")
     print(
-        f"Children count: {len(node3.children) if hasattr(node3, 'children') else 'N/A'}"
+        f"Children count: {len(node3.children) if isinstance(node3, (Element, Fragment)) else 'N/A'}"
     )
     print()
 

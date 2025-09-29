@@ -49,9 +49,9 @@ jobs:
 #          uv run genbadge tests -i reports/pytest.xml -v -o reports/pytest.svg
 #          uv run genbadge coverage -i reports/coverage.xml -v -o reports/coverage.svg
 
-      - name: Move reports to docs/_build
-        run: |
-          mv reports docs/_build/
+#      - name: Move reports to docs/_build
+#        run: |
+#          mv reports docs/_build/
 
       - name: Upload artifact to pages
         uses: actions/upload-pages-artifact@v3
