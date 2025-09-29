@@ -1,6 +1,6 @@
 from typing import Optional
 
-from tdom import Element, html
+from tdom import Element, Fragment, html
 
 from tdom_sphinx.aria_testing import get_by_role
 from tdom_sphinx.aria_testing.utils import get_text_content
@@ -20,7 +20,7 @@ def test_base_layout_html5_structure(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
@@ -51,7 +51,7 @@ def test_base_layout_head_section(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
@@ -119,7 +119,7 @@ def test_base_layout_body_structure(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
@@ -262,7 +262,7 @@ def test_base_layout_no_sphinx_context(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
@@ -314,7 +314,7 @@ def test_base_layout_complex_context(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
@@ -404,7 +404,7 @@ def test_base_layout_static_asset_paths(
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Element)
+    assert isinstance(result, Fragment)
     for child in result.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
