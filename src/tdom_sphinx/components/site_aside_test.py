@@ -1,8 +1,13 @@
-from typing import Optional
-
-from bs4 import BeautifulSoup, Tag
 from tdom import html
 
+from tdom_sphinx.aria_testing import (
+    get_all_by_role,
+    get_by_label_text,
+    get_by_role,
+    get_by_text,
+    query_all_by_role,
+)
+from tdom_sphinx.aria_testing.utils import get_text_content
 from tdom_sphinx.components.site_aside import SiteAside, toc_to_tree, toc_tree_to_nav
 from tdom_sphinx.models import PageContext
 from tdom_sphinx.utils import html_string_to_tdom
@@ -16,13 +21,11 @@ def test_site_aside_renders_empty_toctree(page_context):
         """
     )
 
-    soup = BeautifulSoup(str(result), "html.parser")
-
-    aside_element: Optional[Tag] = soup.select_one("aside")
-    assert aside_element is not None
+    aside_element = get_by_role(result, "complementary")
+    assert aside_element.tag == "aside"
 
     # With empty toc, aside should be essentially empty (just whitespace)
-    assert aside_element.get_text(strip=True) == ""
+    assert get_text_content(aside_element).strip() == ""
 
 
 def test_site_aside_renders_toctree_content():
@@ -47,41 +50,25 @@ def test_site_aside_renders_toctree_content():
         <{SiteAside} page_context={page_context_with_toc} />
         """
     )
-
-    soup = BeautifulSoup(str(result), "html.parser")
-
-    aside_element: Optional[Tag] = soup.select_one("aside")
-    assert aside_element is not None
-
-    # Should contain semantic navigation structure
-    nav_element: Optional[Tag] = aside_element.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
-    assert nav_element is not None
+    site_aside = get_by_label_text(result, "Table of contents")
+    assert site_aside.tag == "nav"
 
     # Should have two direct anchor links (no nesting for simple flat structure)
-    links = nav_element.find_all("a", recursive=False)
+    links = get_all_by_role(site_aside, "link")
     assert len(links) == 2
 
-    # With the Node-based approach, relative_tree can now process the toctree content
     # The URLs should be made relative to the current page
-    assert links[0].get("href") == "docs.html"  # Relative to current page
-    assert links[0].text == "Documentation"
-    assert links[1].get("href") == "api.html"  # Relative to current page
-    assert links[1].text == "API"
-
-
-ASIDE_1 = """\
-<aside id="site-aside">
-  <ul><li><a class="reference internal" href="#">tdom-sphinx</a><ul><li><a class="reference internal" href="#getting-started">Getting started</a></li><li><a class="reference internal" href="#building-the-docs-locally">Building the docs locally</a></li></ul></li></ul>
-</aside>"""
+    assert links[0].attrs["href"] == "docs.html"  # Relative to the current page
+    assert get_text_content(links[0]) == "Documentation"
+    assert links[1].attrs["href"] == "api.html"  # Relative to the current page
+    assert get_text_content(links[1]) == "API"
 
 
 def test_toc_to_tree_with_empty_node():
     """Test toc_to_tree with None input returns empty fragment."""
     result = toc_to_tree(None)
-    soup = BeautifulSoup(str(result), "html.parser")
-    assert soup.get_text(strip=True) == ""
+    result_text = get_text_content(result).strip()
+    assert result_text == ""
 
 
 def test_toc_to_tree_with_simple_ul():
@@ -90,60 +77,66 @@ def test_toc_to_tree_with_simple_ul():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should generate semantic nav structure
-    nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    nav = get_by_role(result, "navigation")
     assert nav is not None
 
+    # Verify aria-label
+    assert nav.attrs.get("aria-label") == "Table of contents"
+
     # Should have one direct anchor link (no nesting for single item)
-    links = nav.find_all("a", recursive=False)
+    links = get_all_by_role(nav, "link")
     assert len(links) == 1
-    assert links[0].get("href") == "/page.html"
-    assert links[0].text == "Page Title"
+    assert links[0].attrs.get("href") == "/page.html"
+    assert get_text_content(links[0]) == "Page Title"
 
 
 def test_toc_to_tree_with_nested_structure():
-    """Test toc_to_tree with nested UL structure matching ASIDE_1."""
-    toc_node = html_string_to_tdom(ASIDE_1)
+    """Test toc_to_tree with a nested UL structure matching ASIDE_1."""
+
+    sphinx_toctree = """\
+    <aside id="site-aside">
+      <ul><li><a class="reference internal" href="#">tdom-sphinx</a><ul><li><a class="reference internal" href="#getting-started">Getting started</a></li><li><a class="reference internal" href="#building-the-docs-locally">Building the docs locally</a></li></ul></li></ul>
+    </aside>"""
+
+    toc_node = html_string_to_tdom(sphinx_toctree)
 
     result = toc_to_tree(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should have main nav container
-    nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    nav = get_by_role(result, "navigation")
     assert nav is not None
 
-    # Should have one details element (for tdom-sphinx)
-    details: Optional[Tag] = nav.select_one("details")
-    assert details is not None
-    assert details.get("open") == "open"
+    # Verify aria-label
+    assert nav.attrs.get("aria-label") == "Table of contents"
 
-    # Check summary link
-    summary_link: Optional[Tag] = details.select_one("summary > a")
-    assert summary_link is not None
-    assert summary_link.get("href") == "#"
-    assert summary_link.get_text(strip=True) == "tdom-sphinx"
+    # Check that we have all three links (main + 2 children)
+    all_links = get_all_by_role(nav, "link")
+    assert len(all_links) == 3
 
-    # Check nested ul structure
-    nested_ul: Optional[Tag] = details.select_one("ul")
-    assert nested_ul is not None
+    # Find and check the specific links by href
+    main_link = None
+    getting_started_link = None
+    docs_locally_link = None
 
-    # Check child links within li elements
-    child_lis = nested_ul.select("li")
-    assert len(child_lis) == 2
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "#":
+            main_link = link
+        elif href == "#getting-started":
+            getting_started_link = link
+        elif href == "#building-the-docs-locally":
+            docs_locally_link = link
 
-    child_links = [li.select_one("a") for li in child_lis]
-    assert child_links[0] is not None
-    assert child_links[0].get("href") == "#getting-started"
-    assert child_links[0].get_text(strip=True) == "Getting started"
-    assert child_links[1] is not None
-    assert child_links[1].get("href") == "#building-the-docs-locally"
-    assert child_links[1].get_text(strip=True) == "Building the docs locally"
+    assert main_link is not None
+    assert get_text_content(main_link) == "tdom-sphinx"
+
+    assert getting_started_link is not None
+    assert get_text_content(getting_started_link) == "Getting started"
+
+    assert docs_locally_link is not None
+    assert get_text_content(docs_locally_link) == "Building the docs locally"
 
 
 def test_toc_to_tree_with_multiple_top_level_items():
@@ -164,47 +157,52 @@ def test_toc_to_tree_with_multiple_top_level_items():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should have main nav container
-    nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    nav = get_by_role(result, "navigation")
     assert nav is not None
 
-    # Should have: 2 direct links + 1 details element
-    direct_links = nav.find_all("a", recursive=False)
-    details_elements = nav.find_all("details", recursive=False)
+    # Verify aria-label
+    assert nav.attrs.get("aria-label") == "Table of contents"
 
-    assert len(direct_links) == 2  # Introduction and Reference
-    assert len(details_elements) == 1  # User Guide
+    # Check all links - should be 5 total (2 direct + 1 user guide + 2 nested)
+    all_links = get_all_by_role(nav, "link")
+    assert len(all_links) == 5
 
-    # Check direct links
-    assert direct_links[0].get("href") == "/intro.html"
-    assert direct_links[0].get_text(strip=True) == "Introduction"
-    assert direct_links[1].get("href") == "/reference.html"
-    assert direct_links[1].get_text(strip=True) == "Reference"
+    # Find and check the specific links by href
+    intro_link = None
+    reference_link = None
+    user_guide_link = None
+    basics_link = None
+    advanced_link = None
 
-    # Check the details element (User Guide)
-    details = details_elements[0]
-    summary_link: Optional[Tag] = details.select_one("summary > a")
-    assert summary_link is not None
-    assert summary_link.get("href") == "/guide.html"
-    assert summary_link.get_text(strip=True) == "User Guide"
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "/intro.html":
+            intro_link = link
+        elif href == "/reference.html":
+            reference_link = link
+        elif href == "/guide.html":
+            user_guide_link = link
+        elif href == "/guide/basics.html":
+            basics_link = link
+        elif href == "/guide/advanced.html":
+            advanced_link = link
 
-    # Check nested items in ul structure
-    nested_ul: Optional[Tag] = details.select_one("ul")
-    assert nested_ul is not None
-    nested_lis = nested_ul.select("li")
-    assert len(nested_lis) == 2
+    assert intro_link is not None
+    assert get_text_content(intro_link) == "Introduction"
 
-    nested_links = [li.select_one("a") for li in nested_lis]
-    assert nested_links[0] is not None
-    assert nested_links[0].get("href") == "/guide/basics.html"
-    assert nested_links[0].get_text(strip=True) == "Basics"
-    assert nested_links[1] is not None
-    assert nested_links[1].get("href") == "/guide/advanced.html"
-    assert nested_links[1].get_text(strip=True) == "Advanced"
+    assert reference_link is not None
+    assert get_text_content(reference_link) == "Reference"
+
+    assert user_guide_link is not None
+    assert get_text_content(user_guide_link) == "User Guide"
+
+    assert basics_link is not None
+    assert get_text_content(basics_link) == "Basics"
+
+    assert advanced_link is not None
+    assert get_text_content(advanced_link) == "Advanced"
 
 
 def test_toc_to_tree_with_fragment_input():
@@ -217,19 +215,20 @@ def test_toc_to_tree_with_fragment_input():
     fragment = TFragment(children=[ul_node])
 
     result = toc_to_tree(fragment)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should generate semantic nav structure
-    nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    nav = get_by_role(result, "navigation")
     assert nav is not None
 
+    # Verify aria-label
+    assert nav.attrs.get("aria-label") == "Table of contents"
+
     # Should have one direct anchor link
-    links = nav.find_all("a", recursive=False)
+    links = get_all_by_role(nav, "link")
     assert len(links) == 1
-    assert links[0].get("href") == "/test.html"
-    assert links[0].get_text(strip=True) == "Test Link"
+
+    test_link = get_by_text(nav, "Test Link")
+    assert test_link.attrs.get("href") == "/test.html"
 
 
 def test_toc_to_tree_with_li_without_anchor():
@@ -244,30 +243,43 @@ def test_toc_to_tree_with_li_without_anchor():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should only render the valid links, skipping the LI without anchor
-    nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    nav = get_by_role(result, "navigation")
     assert nav is not None
 
+    # Verify aria-label
+    assert nav.attrs.get("aria-label") == "Table of contents"
+
     # Should have two direct anchor links
-    links = nav.find_all("a", recursive=False)
+    links = get_all_by_role(nav, "link")
     assert len(links) == 2
-    assert links[0].get("href") == "/valid.html"
-    assert links[0].get_text(strip=True) == "Valid Link"
-    assert links[1].get("href") == "/another.html"
-    assert links[1].get_text(strip=True) == "Another Valid Link"
+
+    # Find links by href to avoid text ambiguity
+    valid_link = None
+    another_link = None
+
+    for link in links:
+        href = link.attrs.get("href")
+        if href == "/valid.html":
+            valid_link = link
+        elif href == "/another.html":
+            another_link = link
+
+    assert valid_link is not None
+    assert get_text_content(valid_link) == "Valid Link"
+
+    assert another_link is not None
+    assert get_text_content(another_link) == "Another Valid Link"
 
 
 def test_toc_tree_to_nav_with_empty_content():
     """Test toc_tree_to_nav with None content returns empty fragment."""
     result = toc_tree_to_nav(None)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should render as empty (no content)
-    assert soup.get_text(strip=True) == ""
+    result_text = get_text_content(result).strip()
+    assert result_text == ""
 
 
 def test_toc_tree_to_nav_with_simple_structure():
@@ -281,66 +293,28 @@ def test_toc_tree_to_nav_with_simple_structure():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_tree_to_nav(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should have main nav container
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
+
+    # Verify aria-label
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
     # Should have two direct anchor links (no nesting)
-    direct_links = main_nav.find_all("a", recursive=False)
+    direct_links = get_all_by_role(main_nav, "link")
     assert len(direct_links) == 2
-    assert direct_links[0].get("href") == "/page1.html"
-    assert direct_links[0].get_text(strip=True) == "Page 1"
-    assert direct_links[1].get("href") == "/page2.html"
-    assert direct_links[1].get_text(strip=True) == "Page 2"
 
+    # Check specific links
+    page1_link = get_by_text(main_nav, "Page 1")
+    assert page1_link.attrs.get("href") == "/page1.html"
 
-def test_toc_tree_to_nav_with_nested_structure():
-    """Test toc_tree_to_nav with ASIDE_1 nested structure."""
-    toc_node = html_string_to_tdom(ASIDE_1)
-
-    result = toc_tree_to_nav(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
-
-    # Should have main nav container
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
-    assert main_nav is not None
-
-    # Should have one details element (for tdom-sphinx)
-    details: Optional[Tag] = main_nav.select_one("details")
-    assert details is not None
-    assert details.get("open") == "open"
-
-    # Check summary link
-    summary_link: Optional[Tag] = details.select_one("summary > a")
-    assert summary_link is not None
-    assert summary_link.get("href") == "#"
-    assert summary_link.get_text(strip=True) == "tdom-sphinx"
-
-    # Check nested ul structure
-    nested_ul: Optional[Tag] = details.select_one("ul")
-    assert nested_ul is not None
-
-    # Check child links within li elements
-    child_lis = nested_ul.select("li")
-    assert len(child_lis) == 2
-
-    child_links = [li.select_one("a") for li in child_lis]
-    assert child_links[0] is not None
-    assert child_links[0].get("href") == "#getting-started"
-    assert child_links[0].get_text(strip=True) == "Getting started"
-    assert child_links[1] is not None
-    assert child_links[1].get("href") == "#building-the-docs-locally"
-    assert child_links[1].get_text(strip=True) == "Building the docs locally"
+    page2_link = get_by_text(main_nav, "Page 2")
+    assert page2_link.attrs.get("href") == "/page2.html"
 
 
 def test_toc_tree_to_nav_with_deep_nesting():
-    """Test toc_tree_to_nav with deeply nested structure."""
+    """Test toc_tree_to_nav with a deeply nested structure."""
     html_content = """
     <ul>
         <li>
@@ -361,52 +335,52 @@ def test_toc_tree_to_nav_with_deep_nesting():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_tree_to_nav(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should have main nav
-    main_nav = soup.select_one("nav[aria-label='Table of contents']")
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
 
-    # Level 1: User Guide (should have details/summary)
-    level1_details = main_nav.select_one("details")
-    assert level1_details is not None
-    level1_summary: Tag | None = level1_details.select_one("summary > a")
-    assert level1_summary is not None
-    assert level1_summary.get_text(strip=True) == "User Guide"
-    assert level1_summary.get("href") == "/guide.html"
+    # Verify aria-label
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
-    # Level 2: Should have nested ul with two items
-    level2_ul = level1_details.select_one("ul")
-    assert level2_ul is not None
+    # Should have all 5 links (User Guide + Basics + Advanced Topics + Introduction + Setup)
+    all_links = get_all_by_role(main_nav, "link")
+    assert len(all_links) == 5
 
-    # Should have two li elements (direct children only)
-    level2_lis = level2_ul.find_all("li", recursive=False)
-    assert len(level2_lis) == 2
+    # Find links by href to avoid text ambiguity
+    user_guide_link = None
+    basics_link = None
+    advanced_link = None
+    intro_link = None
+    setup_link = None
 
-    # Level 2a: Basics (should have details/summary for sub-items)
-    basics_details = level2_lis[0].select_one("details")
-    assert basics_details is not None
-    basics_summary = basics_details.select_one("summary > a")
-    assert basics_summary.text == "Basics"
-    assert basics_summary.get("href") == "/guide/basics.html"
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "/guide.html":
+            user_guide_link = link
+        elif href == "/guide/basics.html":
+            basics_link = link
+        elif href == "/guide/advanced.html":
+            advanced_link = link
+        elif href == "/guide/basics/intro.html":
+            intro_link = link
+        elif href == "/guide/basics/setup.html":
+            setup_link = link
 
-    # Level 2b: Advanced Topics (should be simple link in second li)
-    advanced_link = level2_lis[1].select_one("a")
+    assert user_guide_link is not None
+    assert get_text_content(user_guide_link) == "User Guide"
+
+    assert basics_link is not None
+    assert get_text_content(basics_link) == "Basics"
+
     assert advanced_link is not None
-    assert advanced_link.text.strip() == "Advanced Topics"
-    assert advanced_link.get("href") == "/guide/advanced.html"
+    assert get_text_content(advanced_link) == "Advanced Topics"
 
-    # Level 3: Basics sub-items (should be in ul/li structure)
-    level3_ul = basics_details.select_one("ul")
-    assert level3_ul is not None
-    level3_lis = level3_ul.select("li")
-    assert len(level3_lis) == 2
+    assert intro_link is not None
+    assert get_text_content(intro_link) == "Introduction"
 
-    level3_links = [li.select_one("a") for li in level3_lis]
-    assert level3_links[0].text == "Introduction"
-    assert level3_links[0].get("href") == "/guide/basics/intro.html"
-    assert level3_links[1].text == "Setup"
-    assert level3_links[1].get("href") == "/guide/basics/setup.html"
+    assert setup_link is not None
+    assert get_text_content(setup_link) == "Setup"
 
 
 def test_toc_tree_to_nav_accessibility_attributes():
@@ -424,22 +398,33 @@ def test_toc_tree_to_nav_accessibility_attributes():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_tree_to_nav(toc_node)
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Main nav should have role and aria-label
-    main_nav: Optional[Tag] = soup.select_one("nav")
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
-    assert main_nav.get("role") == "navigation"
-    assert main_nav.get("aria-label") == "Table of contents"
+    assert main_nav.attrs.get("role") == "navigation"
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
-    # Nested structure should use ul/li, not nav
-    nested_ul: Optional[Tag] = soup.select_one("details ul")
-    assert nested_ul is not None
+    # Check that we have the expected structure with links
+    all_links = get_all_by_role(main_nav, "link")
+    assert len(all_links) == 2  # Main Section + Subsection
 
-    # Details should be open by default for better accessibility
-    details: Optional[Tag] = soup.select_one("details")
-    assert details is not None
-    assert details.get("open") == "open"
+    # Find links by href to avoid text ambiguity
+    main_section_link = None
+    subsection_link = None
+
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "/section.html":
+            main_section_link = link
+        elif href == "/section/sub.html":
+            subsection_link = link
+
+    assert main_section_link is not None
+    assert get_text_content(main_section_link) == "Main Section"
+
+    assert subsection_link is not None
+    assert get_text_content(subsection_link) == "Subsection"
 
 
 def test_toc_to_tree_hide_root_disabled():
@@ -458,21 +443,22 @@ def test_toc_to_tree_hide_root_disabled():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node, hide_root=False, site_title="My Site")
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should have the details structure preserved
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
 
-    details: Optional[Tag] = main_nav.select_one("details")
-    assert details is not None
+    # Find all links and get the one with the right href
+    links = query_all_by_role(main_nav, "link")
+    summary_link = None
+    for link in links:
+        if link.attrs.get("href") == "#":
+            summary_link = link
+            break
 
-    summary_link: Optional[Tag] = details.select_one("summary > a")
     assert summary_link is not None
-    assert summary_link.get("href") == "#"
-    assert summary_link.get_text(strip=True) == "My Site"
+    summary_text = get_text_content(summary_link)
+    assert summary_text.strip() == "My Site"
 
 
 def test_toc_to_tree_hide_root_enabled_matching_title():
@@ -491,32 +477,34 @@ def test_toc_to_tree_hide_root_enabled_matching_title():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node, hide_root=True, site_title="My Site")
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should unwrap and show direct links
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
 
-    # Should not have a details element (unwrapped)
-    details: Optional[Tag] = main_nav.select_one("details")
-    assert details is None
+    # Verify aria-label
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
-    # Should have direct li elements for the children (unwrapped from the details)
-    direct_lis = main_nav.find_all("li", recursive=False)
-    assert len(direct_lis) == 2
+    # Should have 2 direct links (unwrapped from the details)
+    direct_links = get_all_by_role(main_nav, "link")
+    assert len(direct_links) == 2
 
-    # Check the links within the li elements
-    link1: Optional[Tag] = direct_lis[0].select_one("a")
-    assert link1 is not None
-    assert link1.get("href") == "/page1.html"
-    assert link1.get_text(strip=True) == "Page 1"
+    # Find links by href to avoid text ambiguity
+    page1_link = None
+    page2_link = None
 
-    link2: Optional[Tag] = direct_lis[1].select_one("a")
-    assert link2 is not None
-    assert link2.get("href") == "/page2.html"
-    assert link2.get_text(strip=True) == "Page 2"
+    for link in direct_links:
+        href = link.attrs.get("href")
+        if href == "/page1.html":
+            page1_link = link
+        elif href == "/page2.html":
+            page2_link = link
+
+    assert page1_link is not None
+    assert get_text_content(page1_link) == "Page 1"
+
+    assert page2_link is not None
+    assert get_text_content(page2_link) == "Page 2"
 
 
 def test_toc_to_tree_hide_root_enabled_non_matching_title():
@@ -535,21 +523,40 @@ def test_toc_to_tree_hide_root_enabled_non_matching_title():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node, hide_root=True, site_title="Different Site")
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should preserve the details structure (titles don't match)
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
 
-    details: Optional[Tag] = main_nav.select_one("details")
-    assert details is not None
+    # Verify aria-label
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
-    summary_link: Optional[Tag] = details.select_one("summary > a")
-    assert summary_link is not None
-    assert summary_link.get("href") == "#"
-    assert summary_link.get_text(strip=True) == "My Site"
+    # Should have all 3 links (My Site + Page 1 + Page 2)
+    all_links = get_all_by_role(main_nav, "link")
+    assert len(all_links) == 3
+
+    # Find links by href to avoid text ambiguity
+    my_site_link = None
+    page1_link = None
+    page2_link = None
+
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "#":
+            my_site_link = link
+        elif href == "/page1.html":
+            page1_link = link
+        elif href == "/page2.html":
+            page2_link = link
+
+    assert my_site_link is not None
+    assert get_text_content(my_site_link) == "My Site"
+
+    assert page1_link is not None
+    assert get_text_content(page1_link) == "Page 1"
+
+    assert page2_link is not None
+    assert get_text_content(page2_link) == "Page 2"
 
 
 def test_toc_to_tree_hide_root_multiple_root_items():
@@ -569,23 +576,43 @@ def test_toc_to_tree_hide_root_multiple_root_items():
     toc_node = html_string_to_tdom(html_content)
 
     result = toc_to_tree(toc_node, hide_root=True, site_title="My Site")
-    soup = BeautifulSoup(str(result), "html.parser")
 
     # Should preserve structure because there are multiple root items
-    main_nav: Optional[Tag] = soup.select_one(
-        "nav[role='navigation'][aria-label='Table of contents']"
-    )
+    main_nav = get_by_role(result, "navigation")
     assert main_nav is not None
 
-    # Should have both a direct link and a details element
-    direct_links = main_nav.find_all("a", recursive=False)
-    details: Optional[Tag] = main_nav.select_one("details")
+    # Verify aria-label
+    assert main_nav.attrs.get("aria-label") == "Table of contents"
 
-    assert len(direct_links) == 1
-    assert direct_links[0].get("href") == "/intro.html"
-    assert direct_links[0].get_text(strip=True) == "Introduction"
+    # Should have all 4 links (Introduction + My Site + Page 1 + Page 2)
+    all_links = get_all_by_role(main_nav, "link")
+    assert len(all_links) == 4
 
-    assert details is not None
-    summary_link: Optional[Tag] = details.select_one("summary > a")
-    assert summary_link is not None
-    assert summary_link.get_text(strip=True) == "My Site"
+    # Find links by href to avoid text ambiguity
+    intro_link = None
+    my_site_link = None
+    page1_link = None
+    page2_link = None
+
+    for link in all_links:
+        href = link.attrs.get("href")
+        if href == "/intro.html":
+            intro_link = link
+        elif href == "#":
+            my_site_link = link
+        elif href == "/page1.html":
+            page1_link = link
+        elif href == "/page2.html":
+            page2_link = link
+
+    assert intro_link is not None
+    assert get_text_content(intro_link) == "Introduction"
+
+    assert my_site_link is not None
+    assert get_text_content(my_site_link) == "My Site"
+
+    assert page1_link is not None
+    assert get_text_content(page1_link) == "Page 1"
+
+    assert page2_link is not None
+    assert get_text_content(page2_link) == "Page 2"

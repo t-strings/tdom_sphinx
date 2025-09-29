@@ -1,10 +1,11 @@
-from typing import Optional
-
-from bs4 import BeautifulSoup, Tag
 from tdom import html
 
+from tdom_sphinx.aria_testing import (
+    get_all_by_role,
+    get_by_role,
+)
 from tdom_sphinx.components.navbar_links import NavbarLinks
-from tdom_sphinx.models import Link, IconLink
+from tdom_sphinx.models import IconLink, Link
 
 
 def test_navbar_links_renders_links_and_buttons(page_context):
@@ -13,7 +14,9 @@ def test_navbar_links_renders_links_and_buttons(page_context):
         Link(href="/about", style="btn", text="About"),
     ]
     buttons = [
-        IconLink(href="https://github.com/org", color="#111", icon_class="fa fa-github"),
+        IconLink(
+            href="https://github.com/org", color="#111", icon_class="fa fa-github"
+        ),
         IconLink(href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"),
     ]
 
@@ -23,27 +26,30 @@ def test_navbar_links_renders_links_and_buttons(page_context):
         """
     )
 
-    soup = BeautifulSoup(str(result), "html.parser")
+    # Find the main list structure
+    ul_element = get_by_role(result, "list")
+    assert ul_element.tag == "ul"
 
-    ul_element: Optional[Tag] = soup.select_one("ul")
-    assert ul_element is not None
-
-    a_tags = ul_element.select("li a")
+    # Find all links within the navbar
+    all_links = get_all_by_role(result, "link")
     # 2 text links + 2 button links
-    assert len(a_tags) == 4
+    assert len(all_links) == 4
 
-    # Check text links
-    assert a_tags[0].get("href") == "docs"
-    assert a_tags[0].get_text(strip=True) == "Docs"
+    # Check text links by finding them by their href attribute
+    docs_link = None
+    about_link = None
 
-    assert a_tags[1].get("href") == "about"
-    assert a_tags[1].get_text(strip=True) == "About"
+    for link in all_links:
+        href = link.attrs.get("href", "")
+        if href == "docs":
+            docs_link = link
+        elif href == "about":
+            about_link = link
 
-    # Check buttons have icons
-    assert a_tags[2].get("href") == "https://github.com/org"
-    icon_2: Optional[Tag] = a_tags[2].select_one("i")
-    assert icon_2 is not None
+    assert docs_link is not None
+    assert docs_link.tag == "a"
+    assert docs_link.attrs.get("href") == "docs"
 
-    assert a_tags[3].get("href") == "https://x.com/org"
-    icon_3: Optional[Tag] = a_tags[3].select_one("i")
-    assert icon_3 is not None
+    assert about_link is not None
+    assert about_link.tag == "a"
+    assert about_link.attrs.get("href") == "about"

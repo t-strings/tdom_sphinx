@@ -1,12 +1,11 @@
 """Tests for utility functions."""
 
-from typing import Optional
-from bs4 import BeautifulSoup
 import pytest
 from tdom.nodes import Element as TElement
 from tdom.nodes import Fragment as TFragment
 from tdom.nodes import Text as TText
 
+from tdom_sphinx.aria_testing.utils import get_text_content
 from tdom_sphinx.utils import html_string_to_tdom
 
 
@@ -31,14 +30,24 @@ def test_text_only():
     assert result.text == "Hello World"
 
 
-def test_beautifulsoup_element():
-    """Test parsing HTML with the BeautifulSoup element."""
+def test_html_parsing_with_aria_testing():
+    """Test parsing HTML and finding elements using aria_testing utilities."""
     html = "<div><h1>Page Title</h1></div>"
-    soup = BeautifulSoup(html, "html.parser")
-    title_element: Optional[BeautifulSoup] = soup.find("h1")
+    result = html_string_to_tdom(html)
 
-    assert title_element is not None
-    assert title_element.get_text(strip=True) == "Page Title"
+    # Find the h1 element
+    assert isinstance(result, TElement)
+    assert result.tag == "div"
+
+    h1_element = None
+    for child in result.children:
+        if isinstance(child, TElement) and child.tag == "h1":
+            h1_element = child
+            break
+
+    assert h1_element is not None
+    title_text = get_text_content(h1_element)
+    assert title_text == "Page Title"
 
 
 def test_single_element():

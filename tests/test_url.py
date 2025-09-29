@@ -1,8 +1,7 @@
 from pathlib import PurePosixPath
 
 import pytest
-from bs4 import BeautifulSoup
-from tdom import html
+from tdom import Element, Fragment, html
 
 from tdom_sphinx.url import normalize, relative, relative_path, relative_tree
 
@@ -101,10 +100,23 @@ def test_relative_tree_head_link_href_is_made_relative():
     relative_tree(node, current)
 
     # Then the link's href should be relative to the current path
-    soup = BeautifulSoup(str(node), "html.parser")
-    link = soup.find("link")
-    assert link is not None
-    assert link.get("href") == "../../static/site.css"
+    # Find the link element recursively in tdom structure
+    def find_element_by_tag(element: Element | Fragment, tag: str) -> Element | None:
+        for child in element.children:
+            if isinstance(child, Element):
+                if child.tag.lower() == tag.lower():
+                    return child
+                # Recursively search children
+                assert isinstance(child, Element)
+                found = find_element_by_tag(child, tag)
+                if found:
+                    return found
+        return None
+
+    assert isinstance(node, Fragment)
+    link_element = find_element_by_tag(node, "link")
+    assert link_element is not None
+    assert link_element.attrs.get("href") == "../../static/site.css"
 
 
 def test_relative_tree_body_anchor_href_is_made_relative():
@@ -114,13 +126,26 @@ def test_relative_tree_body_anchor_href_is_made_relative():
   <a href="/docs.html">Docs</a>
 </body>
 """)
+    assert isinstance(node, Fragment)
     current = PurePosixPath("/index")
     relative_tree(node, current)
 
-    soup = BeautifulSoup(str(node), "html.parser")
-    a = soup.find("a")
-    assert a is not None
-    assert a.get("href") == "docs.html"
+    # Find the anchor element recursively in tdom structure
+    def find_element_by_tag(element: Element | Fragment, tag: str) -> Element | None:
+        for child in element.children:
+            if isinstance(child, Element):
+                if child.tag.lower() == tag.lower():
+                    return child
+                # Recursively search children
+                found = find_element_by_tag(child, tag)
+                if found:
+                    return found
+        return None
+
+    assert isinstance(node, Fragment)
+    a_element = find_element_by_tag(node, "a")
+    assert a_element is not None
+    assert a_element.attrs.get("href") == "docs.html"
 
 
 def test_relative_tree_body_anchor_ignores_non_absolute_and_external():
@@ -134,9 +159,21 @@ def test_relative_tree_body_anchor_ignores_non_absolute_and_external():
     current = PurePosixPath("/a/b/index")
     relative_tree(node, current)
 
-    soup = BeautifulSoup(str(node), "html.parser")
-    a_tags = soup.find_all("a")
-    assert [a.get("href") for a in a_tags] == [
+    # Find all anchor elements in tdom structure
+    def find_all_anchors(element: Element | Fragment) -> list[Element]:
+        anchors = []
+        for child in element.children:
+            if isinstance(child, Element):
+                if child.tag.lower() == "a":
+                    anchors.append(child)
+                # Recursively search children
+                anchors.extend(find_all_anchors(child))
+        return anchors
+
+    assert isinstance(node, Fragment)
+    a_tags = find_all_anchors(node)
+    hrefs = [a.attrs.get("href", "") for a in a_tags]
+    assert hrefs == [
         "foo.html",
         "./bar.html",
         "https://example.com",

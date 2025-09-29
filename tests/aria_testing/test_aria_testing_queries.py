@@ -338,7 +338,7 @@ def test_get_role_for_element_no_role():
 
 def test_get_role_for_element_non_element():
     """Test that get_role_for_element handles non-Element nodes gracefully."""
-    from tdom import Text, Fragment
+    from tdom import Text
 
     # Text nodes don't have roles
     text_node = Text("Just text")

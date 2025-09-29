@@ -1,17 +1,16 @@
-from typing import Optional
-
-from bs4 import BeautifulSoup, Tag
 from tdom import html
 
+from tdom_sphinx.aria_testing import get_by_role
+from tdom_sphinx.aria_testing.utils import get_text_content
 from tdom_sphinx.components.head import Head, make_full_title
 
 
 def test_head(page_context, site_config):
     result = html(t"<{Head} page_context={page_context} site_config={site_config} />")
-    soup = BeautifulSoup(str(result), "html.parser")
-    title_element: Optional[Tag] = soup.select_one("title")
-    assert title_element is not None
-    assert title_element.get_text(strip=True) == "My Test Page - My Test Site"
+    # Head component doesn't have semantic roles, so we need to find by tag
+    # Since this is document metadata, we'll check the string representation
+    result_str = str(result)
+    assert "<title>My Test Page - My Test Site</title>" in result_str
 
 
 def test_make_full_title_with_site_config(page_context, site_config):

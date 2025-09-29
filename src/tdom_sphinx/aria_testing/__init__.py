@@ -19,6 +19,10 @@ from .queries import (
     query_by_role,
     get_all_by_role,
     query_all_by_role,
+    get_by_label_text,
+    query_by_label_text,
+    get_all_by_label_text,
+    query_all_by_label_text,
     # Type exports
     AriaRole,
     LandmarkRole,
@@ -28,6 +32,7 @@ from .queries import (
     LiveRegionRole,
     WindowRole,
     CommonRole,
+    Container,
 )
 from .utils import get_text_content, normalize_text
 from .errors import TestingLibraryError, ElementNotFoundError, MultipleElementsError
@@ -45,6 +50,10 @@ __all__ = [
     "query_by_role",
     "get_all_by_role",
     "query_all_by_role",
+    "get_by_label_text",
+    "query_by_label_text",
+    "get_all_by_label_text",
+    "query_all_by_label_text",
     "get_text_content",
     "normalize_text",
     "TestingLibraryError",
@@ -59,4 +68,5 @@ __all__ = [
     "LiveRegionRole",
     "WindowRole",
     "CommonRole",
+    "Container",
 ]

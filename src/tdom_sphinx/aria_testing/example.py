@@ -5,7 +5,7 @@ Example usage of the aria_testing library.
 from tdom.processor import html
 from tdom_sphinx.aria_testing import (
     get_by_text, query_by_text,
-    get_by_role, get_by_test_id,
+    get_by_role, get_by_test_id, get_by_label_text,
 )
 
 
@@ -22,7 +22,10 @@ def example_usage():
         <main>
             <p>Hello, world!</p>
             <form>
-                <input type="text" placeholder="Enter your name" data-testid="name-input" />
+                <label for="name-field">Name</label>
+                <input id="name-field" type="text" placeholder="Enter your name" data-testid="name-input" />
+
+                <input type="email" aria-label="Email Address" />
                 <button type="submit">Submit</button>
             </form>
         </main>
@@ -60,6 +63,14 @@ def example_usage():
     # Example 6: Text matching
     greeting = query_by_text(document, "Hello, world!")
     print(f"Found greeting: {greeting.tag if greeting else 'None'}")  # p
+
+    # Example 7: Find by label text
+    name_field = get_by_label_text(document, "Name")
+    print(f"Found name field: {name_field.tag}")  # input
+
+    # Example 8: Find by aria-label
+    email_field = get_by_label_text(document, "Email Address")
+    print(f"Found email field: {email_field.attrs['type']}")  # email
 
     print("All examples completed successfully!")
 

@@ -1,8 +1,7 @@
-from typing import Optional
-
-from bs4 import BeautifulSoup, Tag
 from tdom import html
 
+from tdom_sphinx.aria_testing import get_by_role
+from tdom_sphinx.aria_testing.utils import get_text_content
 from tdom_sphinx.components.navbar_brand import NavbarBrand
 
 
@@ -13,16 +12,19 @@ def test_navbar_brand_renders_brand_link_and_title(page_context):
         """
     )
 
-    soup = BeautifulSoup(str(result), "html.parser")
+    ul_element = get_by_role(result, "list")
+    assert ul_element.tag == "ul"
 
-    ul_element: Optional[Tag] = soup.select_one("ul")
-    assert ul_element is not None
-
-    a_element: Optional[Tag] = ul_element.select_one("li a")
-    assert a_element is not None
+    # Find the link containing the brand text
+    link_element = get_by_role(result, "link")
+    assert link_element.tag == "a"
     # Since page_context.pagename is "index", "/" should be converted to "index" by relative_tree
-    assert a_element.get("href") == "index"
+    assert link_element.attrs.get("href") == "index"
 
-    strong_element: Optional[Tag] = a_element.select_one("strong")
-    assert strong_element is not None
-    assert strong_element.get_text(strip=True) == "My Site"
+    # Check that the link contains the expected text
+    link_text = get_text_content(link_element).strip()
+    assert "My Site" in link_text
+
+    # Verify the link contains a strong element with the title
+    link_html = str(link_element)
+    assert "<strong>My Site</strong>" in link_html

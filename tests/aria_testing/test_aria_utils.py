@@ -4,7 +4,7 @@ Tests for aria_testing.utils module.
 
 import re
 
-from tdom import Comment, Element, Fragment, Text
+from tdom import Comment, Text
 from tdom.processor import html
 
 from tdom_sphinx.aria_testing.utils import (
