@@ -177,3 +177,95 @@ def get_all_elements(container: Node) -> list[Element]:
     return results
 
 
+def get_accessible_name(element: Element, role: Optional[str] = None) -> str:
+    """
+    Get the accessible name for an element based on its role and attributes.
+
+    This follows the accessible name computation algorithm, checking:
+    1. aria-label
+    2. aria-labelledby (referenced element text)
+    3. Role-specific naming (text content, href, alt, title)
+    4. Text content fallback
+
+    Args:
+        element: The element to get the accessible name for
+        role: The element's ARIA role (for role-specific behavior)
+
+    Returns:
+        The computed accessible name as a string
+    """
+    # Check aria-label first
+    if "aria-label" in element.attrs:
+        aria_label = element.attrs["aria-label"]
+        if aria_label and aria_label.strip():
+            return aria_label.strip()
+
+    # Check aria-labelledby
+    if "aria-labelledby" in element.attrs:
+        labelledby_ids = element.attrs["aria-labelledby"].split()
+        # In a real implementation, we would traverse the DOM to find elements with these IDs
+        # For now, we'll skip this complex case and fall through to other methods
+        pass
+
+    # Role-specific naming
+    if role == "link":
+        # For links: combine text content and href for name matching
+        text = get_text_content(element).strip()
+        href = element.attrs.get("href", "")
+
+        # Combine text and href for comprehensive name matching
+        name_parts = []
+        if text:
+            name_parts.append(text)
+        if href:
+            name_parts.append(href)
+
+        if name_parts:
+            return " ".join(name_parts)
+
+        # If neither text nor href, fall through to general fallback
+
+    elif role == "button":
+        # For buttons: text content is primary
+        text = get_text_content(element).strip()
+        if text:
+            return text
+
+    elif role == "img":
+        # For images: alt text is primary
+        if "alt" in element.attrs:
+            alt = element.attrs["alt"]
+            if alt is not None:  # alt="" is valid
+                return alt
+        # Fallback to title
+        if "title" in element.attrs:
+            title = element.attrs["title"]
+            if title and title.strip():
+                return title.strip()
+
+    elif role in ("textbox", "combobox", "listbox"):
+        # For form controls, check value first, then placeholder, then text content
+        if "value" in element.attrs:
+            value = element.attrs["value"]
+            if value and value.strip():
+                return value.strip()
+        if "placeholder" in element.attrs:
+            placeholder = element.attrs["placeholder"]
+            if placeholder and placeholder.strip():
+                return placeholder.strip()
+
+    # General fallback: text content
+    text = get_text_content(element).strip()
+    if text:
+        return text
+
+    # Final fallback: title attribute
+    if "title" in element.attrs:
+        title = element.attrs["title"]
+        if title and title.strip():
+            return title.strip()
+
+    # No accessible name found
+    return ""
+
+

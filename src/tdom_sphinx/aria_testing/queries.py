@@ -5,13 +5,15 @@ All query functions accept both Element and Fragment containers, allowing you to
 search within any tdom structure returned by html().
 """
 
-from typing import List, Literal, Optional, Union
+import re
+from typing import List, Literal, Optional, Union, Pattern
 
 from tdom import Element, Fragment, Node
 
 from tdom_sphinx.aria_testing.errors import ElementNotFoundError, MultipleElementsError
 from tdom_sphinx.aria_testing.utils import (
     find_elements_by_attribute,
+    get_accessible_name,
     get_all_elements,
     get_text_content,
 )
@@ -146,6 +148,9 @@ CommonRole = Literal[
 ]
 
 
+# Note: Using keyword-only arguments with * separator instead of options dictionary
+
+
 def get_role_for_element(node: Node) -> Optional[str]:
     """Get the ARIA role for a node (only Elements can have roles)."""
     # Only Elements can have ARIA roles
@@ -178,6 +183,8 @@ def get_role_for_element(node: Node) -> Optional[str]:
         "ol": "list",
         "li": "listitem",
         "form": "form",
+        "img": "img",
+        "textarea": "textbox",
     }
 
     if tag in role_map:
@@ -207,9 +214,19 @@ def query_all_by_role(
     role: AriaRole,
     *,
     level: Optional[int] = None,
-    name: Optional[str] = None,
+    name: Optional[Union[str, Pattern[str]]] = None,
 ) -> List[Element]:
-    """Find all elements with the specified role."""
+    """Find all elements with the specified role.
+
+    Args:
+        container: The container to search within
+        role: The ARIA role to search for
+        level: Heading level for heading roles (keyword-only)
+        name: Accessible name to match (keyword-only)
+
+    Returns:
+        List of elements matching the criteria
+    """
     all_elements = get_all_elements(container)
     # Skip container itself if it's an element
     if isinstance(container, Element) and all_elements and all_elements[0] is container:
@@ -237,6 +254,18 @@ def query_all_by_role(
             else:
                 continue
 
+        # Check accessible name
+        if name is not None:
+            element_name = get_accessible_name(element, element_role)
+            if isinstance(name, Pattern):
+                # Regex pattern matching
+                if not name.search(element_name):
+                    continue
+            else:
+                # String substring matching
+                if name not in element_name:
+                    continue
+
         results.append(element)
 
     return results
@@ -247,9 +276,23 @@ def get_by_role(
     role: AriaRole,
     *,
     level: Optional[int] = None,
-    name: Optional[str] = None,
+    name: Optional[Union[str, Pattern[str]]] = None,
 ) -> Element:
-    """Find a single element with the specified role."""
+    """Find a single element with the specified role.
+
+    Args:
+        container: The container to search within
+        role: The ARIA role to search for
+        level: Heading level for heading roles (keyword-only)
+        name: Accessible name to match (keyword-only)
+
+    Returns:
+        Single element matching the criteria
+
+    Raises:
+        ElementNotFoundError: If no element found
+        MultipleElementsError: If multiple elements found
+    """
     elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
         raise ElementNotFoundError(f"Unable to find element with role '{role}'")
@@ -265,9 +308,19 @@ def query_by_role(
     role: AriaRole,
     *,
     level: Optional[int] = None,
-    name: Optional[str] = None,
+    name: Optional[Union[str, Pattern[str]]] = None,
 ) -> Optional[Element]:
-    """Find a single element with the specified role, return None if not found."""
+    """Find a single element with the specified role, return None if not found.
+
+    Args:
+        container: The container to search within
+        role: The ARIA role to search for
+        level: Heading level for heading roles (keyword-only)
+        name: Accessible name to match (keyword-only)
+
+    Returns:
+        Single element if found, None otherwise
+    """
     elements = query_all_by_role(container, role, level=level, name=name)
     return elements[0] if elements else None
 
@@ -277,9 +330,22 @@ def get_all_by_role(
     role: AriaRole,
     *,
     level: Optional[int] = None,
-    name: Optional[str] = None,
+    name: Optional[Union[str, Pattern[str]]] = None,
 ) -> List[Element]:
-    """Find all elements with the specified role, raise error if none found."""
+    """Find all elements with the specified role, raise error if none found.
+
+    Args:
+        container: The container to search within
+        role: The ARIA role to search for
+        level: Heading level for heading roles (keyword-only)
+        name: Accessible name to match (keyword-only)
+
+    Returns:
+        List of elements matching the criteria
+
+    Raises:
+        ElementNotFoundError: If no elements found
+    """
     elements = query_all_by_role(container, role, level=level, name=name)
     if not elements:
         raise ElementNotFoundError(f"Unable to find elements with role '{role}'")
