@@ -12,8 +12,6 @@ dependencies = [
     "tdom",
 ]
 
-[tool.uv.sources]
-tdom = { path = "../tdom", editable = true }
 
 [tool.pytest.ini_options]
 testpaths = ["src", "tests"]
