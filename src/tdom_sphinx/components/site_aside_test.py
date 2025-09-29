@@ -15,13 +15,13 @@ from tdom_sphinx.utils import html_string_to_tdom
 
 def test_site_aside_renders_empty_toctree(page_context):
     """Test SiteAside with empty toctree (default page_context fixture)."""
-    result = html(
+    container = html(
         t"""
         <{SiteAside} page_context={page_context} />
         """
     )
 
-    aside_element = get_by_role(result, "complementary")
+    aside_element = get_by_role(container, "complementary")
     assert aside_element.tag == "aside"
 
     # With empty toc, aside should be essentially empty (just whitespace)
@@ -45,12 +45,12 @@ def test_site_aside_renders_toctree_content():
         toc=html_string_to_tdom(toctree_html),
     )
 
-    result = html(
+    container = html(
         t"""
         <{SiteAside} page_context={page_context_with_toc} />
         """
     )
-    site_aside = get_by_label_text(result, "Table of contents")
+    site_aside = get_by_label_text(container, "Table of contents")
     assert site_aside.tag == "nav"
 
     # Should have two direct anchor links (no nesting for simple flat structure)

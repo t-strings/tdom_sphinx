@@ -9,18 +9,18 @@ from tdom_sphinx.models import PageContext, SiteConfig
 def test_heading_wraps_navbar_and_is_fixed(
     site_config: SiteConfig, page_context: PageContext
 ):
-    result = html(t"""
+    container = html(t"""
         <{Heading} page_context={page_context} site_config={site_config} />
     """)
 
-    header_element = get_by_role(result, "banner")
+    header_element = get_by_role(container, "banner")
     assert header_element.tag == "header"
 
     # Check for the fixed class in the HTML
     header_html = str(header_element)
     assert "is-fixed" in header_html
 
-    nav_element = get_by_role(result, "navigation")
+    nav_element = get_by_role(container, "navigation")
     assert nav_element.tag == "nav"
 
     # Brand should come from site_title, and href should be relative to the current page
@@ -30,7 +30,7 @@ def test_heading_wraps_navbar_and_is_fixed(
     assert "My Test Site" in nav_text
 
     # Find all links and check for the brand link with href="index"
-    all_links = get_all_by_role(result, "link")
+    all_links = get_all_by_role(container, "link")
     brand_anchor = None
     for link in all_links:
         if link.attrs.get("href") == "index":

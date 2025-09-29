@@ -11,17 +11,17 @@ from tdom_sphinx.models import PageContext, SiteConfig
 def test_base_layout_html5_structure(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    result = html(
+    container = html(
         t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
     )
-    html_string = str(result)
+    html_string = str(container)
 
     assert "<!DOCTYPE html>" in html_string
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break
@@ -45,14 +45,14 @@ def test_base_layout_html5_structure(
 def test_base_layout_head_section(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    result = html(
+    container = html(
         t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
     )
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break
@@ -113,14 +113,14 @@ def test_base_layout_head_section(
 def test_base_layout_body_structure(
     page_context: PageContext, site_config: SiteConfig
 ) -> None:
-    result = html(
+    container = html(
         t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
     )
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break
@@ -135,13 +135,13 @@ def test_base_layout_body_structure(
     assert body_element is not None
 
     # Heading component - using semantic role
-    header_element = get_by_role(result, "banner")
+    header_element = get_by_role(container, "banner")
     assert header_element.tag == "header"
     # Check for the fixed class in the HTML
     assert "is-fixed" in str(header_element)
 
     # Main component contains the body HTML - using semantic role
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element.tag == "main"
 
     # Find p element within main using tdom navigation
@@ -162,7 +162,7 @@ def test_base_layout_body_structure(
     assert "Hello World" in main_content
 
     # Footer component present - using semantic role
-    footer_element = get_by_role(result, "contentinfo")
+    footer_element = get_by_role(container, "contentinfo")
     assert footer_element.tag == "footer"
 
 
@@ -181,9 +181,9 @@ def test_base_layout_body_content_extraction(
         templatename="page.html",
         toc=None,
     )
-    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
+    container = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
 
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element.tag == "main"
 
     # Find elements within main using tdom navigation
@@ -220,9 +220,9 @@ def test_base_layout_no_body_content(
         templatename="page.html",
         toc=None,
     )
-    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
+    container = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
 
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element.tag == "main"
 
     # Find p element within main using tdom navigation
@@ -258,12 +258,12 @@ def test_base_layout_no_sphinx_context(
         toc=None,
     )
 
-    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
+    container = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break
@@ -286,7 +286,7 @@ def test_base_layout_no_sphinx_context(
     assert get_text_content(title_element) == "No Sphinx Context - My Test Site"
 
     # Body is missing; Main renders empty when no body provided
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element is not None
     assert get_text_content(main_element).strip() == ""
 
@@ -307,15 +307,15 @@ def test_base_layout_complex_context(
         toc=None,
     )
 
-    result = html(
+    container = html(
         t"<{BaseLayout} page_context={page_context} site_config={site_config} />"
     )
-    html_string = str(result)
+    html_string = str(container)
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break
@@ -337,7 +337,7 @@ def test_base_layout_complex_context(
     assert title_element is not None
     assert get_text_content(title_element) == "Complex Test - My Test Site"
 
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element is not None
     assert "Main content" in get_text_content(main_element)
 
@@ -361,9 +361,9 @@ def test_base_layout_html_escaping(
         toc=None,
     )
 
-    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
+    container = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
 
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element is not None
 
     # Find elements within main using tdom navigation
@@ -400,12 +400,12 @@ def test_base_layout_static_asset_paths(
         toc=None,
     )
 
-    result = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
+    container = html(t"<{BaseLayout} page_context={local} site_config={site_config} />")
 
     # Find HTML element within Fragment
     html_element = None
-    assert isinstance(result, Fragment)
-    for child in result.children:
+    assert isinstance(container, Fragment)
+    for child in container.children:
         if isinstance(child, Element) and child.tag.lower() == "html":
             html_element = child
             break

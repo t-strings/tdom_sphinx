@@ -11,11 +11,11 @@ from tdom_sphinx.models import PageContext, SiteConfig
 def test_footer_contains_centered_copyright(
     site_config: SiteConfig, page_context: PageContext
 ):
-    result = html(t"""
+    container = html(t"""
         <{Footer} site_config={site_config} page_context={page_context} />
     """)
 
-    footer_element = get_by_role(result, "contentinfo")
+    footer_element = get_by_role(container, "contentinfo")
     assert footer_element.tag == "footer"
 
     # Find the paragraph within the footer.

@@ -15,5 +15,5 @@ def Greeting(name: str):
 
 def test_htpy_component_decorator_basic():
     # Use the component inside a t-strings template via component syntax
-    result = html(t'<{Greeting} name="World"/>')
-    assert str(result) == "<div>Hello <span>World</span></div>"
+    container = html(t'<{Greeting} name="World"/>')
+    assert str(container) == "<div>Hello <span>World</span></div>"

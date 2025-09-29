@@ -6,9 +6,9 @@ from tdom_sphinx.components.main import Main
 
 
 def test_main_includes_body_from_context(page_context):
-    result = html(t"<{Main} page_context={page_context} />")
+    container = html(t"<{Main} page_context={page_context} />")
 
-    main_element = get_by_role(result, "main")
+    main_element = get_by_role(container, "main")
     assert main_element.tag == "main"
 
     # Check that the main contains the expected text

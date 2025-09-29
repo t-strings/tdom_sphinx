@@ -20,18 +20,18 @@ def test_navbar_links_renders_links_and_buttons(page_context):
         IconLink(href="https://x.com/org", color="#08f", icon_class="fa fa-twitter"),
     ]
 
-    result = html(
+    container = html(
         t"""
         <{NavbarLinks} pagename={page_context.pagename} links={links} buttons={buttons} />
         """
     )
 
     # Find the main list structure
-    ul_element = get_by_role(result, "list")
+    ul_element = get_by_role(container, "list")
     assert ul_element.tag == "ul"
 
     # Find all links within the navbar
-    all_links = get_all_by_role(result, "link")
+    all_links = get_all_by_role(container, "link")
     # 2 text links + 2 button links
     assert len(all_links) == 4
 

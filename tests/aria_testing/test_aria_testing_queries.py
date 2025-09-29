@@ -21,6 +21,7 @@ from tdom_sphinx.aria_testing.queries import (
     query_by_test_id,
     query_by_text,
 )
+from tdom_sphinx.aria_testing.utils import get_text_content
 
 
 @pytest.fixture
@@ -411,16 +412,16 @@ def test_role_with_name_text_content():
     # Test substring matching
     element = query_by_role(container, "button", name="Save")
     assert element is not None
-    assert "Save Document" in element.children[0].text
+    assert "Save Document" in get_text_content(element)
 
     element = query_by_role(container, "button", name="Cancel")
     assert element is not None
-    assert "Cancel Operation" in element.children[0].text
+    assert "Cancel Operation" in get_text_content(element)
 
     # Test full text matching
     element = query_by_role(container, "button", name="Delete File")
     assert element is not None
-    assert "Delete File" in element.children[0].text
+    assert "Delete File" in get_text_content(element)
 
 
 def test_role_with_name_aria_label():
@@ -505,7 +506,7 @@ def test_role_with_keyword_arguments():
 
     element = query_by_role(container, "button", name="Save")
     assert element is not None
-    assert "Save Changes" in element.children[0].text
+    assert "Save Changes" in get_text_content(element)
 
     element = query_by_role(container, "button", name="Cancel")
     assert element is not None
@@ -526,7 +527,7 @@ def test_get_all_by_role_with_name():
 
     # Both buttons should contain "Save" in their accessible name
     for element in elements:
-        text = element.children[0].text
+        text = get_text_content(element)
         assert "Save" in text
 
 
@@ -606,7 +607,7 @@ def test_link_name_text_and_href_combined():
     # Match by text content
     element = query_by_role(container, "link", name="Download")
     assert element is not None
-    assert "Download Now" in element.children[0].text
+    assert "Download Now" in get_text_content(element)
 
     # Match by href path
     element = query_by_role(container, "link", name="/signup")
@@ -621,7 +622,7 @@ def test_link_name_text_and_href_combined():
     # Match by text content when href doesn't contain the term
     element = query_by_role(container, "link", name="Join")
     assert element is not None
-    assert "Join Today" in element.children[0].text
+    assert "Join Today" in get_text_content(element)
 
 
 def test_link_href_only_no_text():
@@ -661,7 +662,8 @@ def test_link_complex_href_patterns():
     # Match by domain in URL
     element = query_by_role(container, "link", name="github.com")
     assert element is not None
-    assert "api.github.com" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "api.github.com" in href
 
     # Match by email protocol and domain
     element = query_by_role(container, "link", name="mailto:")
@@ -670,7 +672,8 @@ def test_link_complex_href_patterns():
 
     element = query_by_role(container, "link", name="example.com")
     assert element is not None
-    assert "contact@example.com" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "contact@example.com" in href
 
     # Match by phone protocol
     element = query_by_role(container, "link", name="tel:")
@@ -680,7 +683,8 @@ def test_link_complex_href_patterns():
     # Match by phone number part
     element = query_by_role(container, "link", name="555")
     assert element is not None
-    assert "555" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "555" in href
 
     # Match by fragment identifier
     element = query_by_role(container, "link", name="#section")
@@ -690,7 +694,8 @@ def test_link_complex_href_patterns():
     # Match by query parameters
     element = query_by_role(container, "link", name="page=2")
     assert element is not None
-    assert "page=2" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "page=2" in href
 
 
 def test_link_priority_aria_label_over_href():
@@ -725,7 +730,8 @@ def test_multiple_links_href_matching():
     # Should find the docs version, not the blog version
     element = query_by_role(container, "link", name="/docs/getting")
     assert element is not None
-    assert "/docs/getting-started" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "/docs/getting-started" in href
 
     # Should find the API docs specifically
     element = query_by_role(container, "link", name="docs/api")
@@ -735,13 +741,15 @@ def test_multiple_links_href_matching():
     # Should distinguish between docs and blog by path
     element = query_by_role(container, "link", name="/blog/")
     assert element is not None
-    assert "/blog/" in element.attrs["href"]
+    href = element.attrs.get("href", "")
+    assert href is not None and "/blog/" in href
 
     # Get all docs links
     elements = get_all_by_role(container, "link", name="/docs/")
     assert len(elements) == 3
     for element in elements:
-        assert "/docs/" in element.attrs["href"]
+        href = element.attrs.get("href", "")
+        assert href is not None and "/docs/" in href
 
 
 def test_regex_name_matching():
@@ -759,12 +767,12 @@ def test_regex_name_matching():
     # Case-insensitive regex for button text
     save_btn = query_by_role(container, "button", name=re.compile(r"save", re.IGNORECASE))
     assert save_btn is not None
-    assert "Save Document" in save_btn.children[0].text
+    assert "Save Document" in get_text_content(save_btn)
 
     # Regex to match all-caps text
     cancel_btn = query_by_role(container, "button", name=re.compile(r"^[A-Z\s]+$"))
     assert cancel_btn is not None
-    assert "CANCEL OPERATION" in cancel_btn.children[0].text
+    assert "CANCEL OPERATION" in get_text_content(cancel_btn)
 
     # Regex for links with case-insensitive matching
     api_link = query_by_role(container, "link", name=re.compile(r"api", re.IGNORECASE))
@@ -792,7 +800,7 @@ def test_regex_vs_string_matching():
     # String matching is case-sensitive substring
     element = query_by_role(container, "button", name="save")
     assert element is not None
-    assert "save file" in element.children[0].text
+    assert "save file" in get_text_content(element)
 
     # Regex matching with case-insensitive flag matches all
     elements = get_all_by_role(container, "button", name=re.compile(r"save", re.IGNORECASE))
@@ -802,7 +810,7 @@ def test_regex_vs_string_matching():
     element = query_by_role(container, "button", name=re.compile(r"^save file$", re.IGNORECASE))
     assert element is not None
     # Should match the lowercase one first
-    text = element.children[0].text if element.children else ""
+    text = get_text_content(element) if element.children else ""
     assert text in ["save file", "SAVE FILE"]
 
 

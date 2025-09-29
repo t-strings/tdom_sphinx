@@ -202,10 +202,12 @@ def get_accessible_name(element: Element, role: Optional[str] = None) -> str:
 
     # Check aria-labelledby
     if "aria-labelledby" in element.attrs:
-        labelledby_ids = element.attrs["aria-labelledby"].split()
-        # In a real implementation, we would traverse the DOM to find elements with these IDs
-        # For now, we'll skip this complex case and fall through to other methods
-        pass
+        labelledby_attr = element.attrs["aria-labelledby"]
+        if labelledby_attr is not None:
+            labelledby_ids = labelledby_attr.split()
+            # In a real implementation, we would traverse the DOM to find elements with these IDs
+            # For now, we'll skip this complex case and fall through to other methods
+            pass
 
     # Role-specific naming
     if role == "link":

@@ -6,17 +6,17 @@ from tdom_sphinx.components.navbar_brand import NavbarBrand
 
 
 def test_navbar_brand_renders_brand_link_and_title(page_context):
-    result = html(
+    container = html(
         t"""
         <{NavbarBrand} pagename={page_context.pagename} href="/" title="My Site" />
         """
     )
 
-    ul_element = get_by_role(result, "list")
+    ul_element = get_by_role(container, "list")
     assert ul_element.tag == "ul"
 
     # Find the link containing the brand text
-    link_element = get_by_role(result, "link")
+    link_element = get_by_role(container, "link")
     assert link_element.tag == "a"
     # Since page_context.pagename is "index", "/" should be converted to "index" by relative_tree
     assert link_element.attrs.get("href") == "index"
